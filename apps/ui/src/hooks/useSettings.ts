@@ -27,17 +27,17 @@ export function useUpdateSettings() {
 			qc.setQueryData(['config', 'settings'], fresh)
 
 			// clear crash UI
-			qc.setQueryData(['bitcoind', 'exit'], null)
+			qc.setQueryData(['litecoind', 'exit'], null)
 
-			// clear bitcoin crash toast if it is still showing
-			toast.dismiss('bitcoind-exit')
+			// clear litecoin crash toast if it is still showing
+			toast.dismiss('litecoind-exit')
 
 			// Purge and kickoff background refetches for rpc data
 			qc.removeQueries({queryKey: ['rpc']})
 			qc.invalidateQueries({queryKey: ['rpc']})
 
 			// Invalidate version cache so header updates
-			qc.invalidateQueries({queryKey: ['bitcoind', 'version']})
+			qc.invalidateQueries({queryKey: ['litecoind', 'version']})
 		},
 	})
 }
@@ -53,17 +53,17 @@ export function useRestoreDefaults() {
 			qc.setQueryData(['config', 'settings'], fresh)
 
 			// clear crash UI
-			qc.setQueryData(['bitcoind', 'exit'], null)
+			qc.setQueryData(['litecoind', 'exit'], null)
 
-			// clear bitcoin crash toast if it is still showing
-			toast.dismiss('bitcoind-exit')
+			// clear litecoin crash toast if it is still showing
+			toast.dismiss('litecoind-exit')
 
 			// Purge and kickoff background refetches for rpc data
 			qc.removeQueries({queryKey: ['rpc']})
 			qc.invalidateQueries({queryKey: ['rpc']})
 
 			// Invalidate version cache so header updates
-			qc.invalidateQueries({queryKey: ['bitcoind', 'version']})
+			qc.invalidateQueries({queryKey: ['litecoind', 'version']})
 		},
 	})
 }

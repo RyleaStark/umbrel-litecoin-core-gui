@@ -1,4 +1,4 @@
-const url = `http://${process.env['BITCOIND_IP'] || '127.0.0.1'}:${process.env['RPC_PORT'] || '8332'}/`
+const url = `http://${process.env['LITECOIND_IP'] || '127.0.0.1'}:${process.env['RPC_PORT'] || '8332'}/`
 const auth = `Basic ${Buffer.from(
 	`${process.env['RPC_USER'] || 'umbrel'}:${process.env['RPC_PASS'] || 'moneyprintergobrrr'}`,
 ).toString('base64')}`

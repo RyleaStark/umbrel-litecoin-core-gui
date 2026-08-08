@@ -1,11 +1,11 @@
 // Shared type declarations from the backend and ui
 
-export type BitcoindVersion = {
+export type LitecoindVersion = {
 	implementation: string
 	version: string
 }
 
-export type BitcoindStatus = {
+export type LitecoindStatus = {
 	running: boolean
 	startedAt: number | null
 	error: Error | null
@@ -13,12 +13,12 @@ export type BitcoindStatus = {
 	pid: number | null
 }
 
-type BitcoindLifecycleResult = 'started' | 'stopped' | 'no_op'
+type LitecoindLifecycleResult = 'started' | 'stopped' | 'no_op'
 
-export type BitcoindLifecycleResponse = {
+export type LitecoindLifecycleResponse = {
 	running: boolean
 	pid: number | null
-	result: BitcoindLifecycleResult
+	result: LitecoindLifecycleResult
 }
 
 export type ExitInfo = {
@@ -65,7 +65,7 @@ export type PeerLocationsResponse = {
 
 export type RawTransaction = {
 	txid: string
-	fee?: number // fee in BTC (not available for coinbase)
+	fee?: number // fee in LTC (not available for coinbase)
 	vsize: number
 	weight: number
 }
@@ -118,7 +118,7 @@ export type Stats = {
 	peers: number // total connections
 	mempoolBytes: number // Total memory usage for the mempool in bytes
 	chainBytes: number // the estimated size of the block and undo files on disk in bytes
-	uptimeSec: number // seconds since bitcoind started (0 if down)
+	uptimeSec: number // seconds since litecoind started (0 if down)
 }
 
 export type ConnectionDetails = {

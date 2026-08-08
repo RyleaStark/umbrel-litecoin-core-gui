@@ -7,7 +7,7 @@ import {Button} from '@/components/ui/button'
 import {useCustomConfig, useSaveCustomConfig} from '@/hooks/useCustomConfig'
 
 export default function CustomConfigEditor() {
-	// Fetch user's existing custom config lines from bitcoin.conf
+	// Fetch user's existing custom config lines from litecoin.conf
 	const {data, isLoading} = useCustomConfig()
 	const save = useSaveCustomConfig()
 
@@ -23,9 +23,9 @@ export default function CustomConfigEditor() {
 
 	return (
 		<div className='border border-white/20 rounded-lg p-4 w-full'>
-			<label className='text-[14px] font-[400] text-white'>Custom bitcoin.conf overrides</label>
+			<label className='text-[14px] font-[400] text-white'>Custom litecoin.conf overrides</label>
 			<p className='text-[13px] font-[400] text-white/60'>
-				Add custom bitcoin.conf options here. Any options here will override settings from the other tabs.
+				Add custom litecoin.conf options here. Any options here will override settings from the other tabs.
 			</p>
 
 			<Textarea
@@ -47,7 +47,7 @@ export default function CustomConfigEditor() {
 				disabled={!canSave}
 				onClick={() =>
 					save.mutate(text, {
-						onSuccess: () => toast.success('Overrides saved; restarting Bitcoin Core…'),
+						onSuccess: () => toast.success('Overrides saved; restarting Litecoin Core…'),
 						onError: (e) => toast.error(e instanceof Error ? e.message : 'Failed to save overrides'),
 					})
 				}

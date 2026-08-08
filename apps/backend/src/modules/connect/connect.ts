@@ -7,7 +7,7 @@ export async function getConnectionDetails(): Promise<ConnectionDetails> {
 	const p2pLocalHost = process.env['DEVICE_DOMAIN_NAME'] ?? '127.0.0.1'
 
 	// RPC
-	const label = 'Umbrel Bitcoin Node'
+	const label = 'Umbrel Litecoin Node'
 	const rpcPort = process.env['RPC_PORT'] ?? '8332'
 	const rpcUser = process.env['RPC_USER'] ?? 'umbrel'
 	const rpcPassword = process.env['RPC_PASS'] ?? 'moneyprintergobrrr'
@@ -34,14 +34,14 @@ export async function getConnectionDetails(): Promise<ConnectionDetails> {
 				port: rpcPort,
 				username: rpcUser,
 				password: rpcPassword,
-				uri: `btcrpc://${rpcUser}:${rpcPassword}@${rpcTorHost}:${rpcPort}?label=${encodeURIComponent(label)}`,
+				uri: `ltcrpc://${rpcUser}:${rpcPassword}@${rpcTorHost}:${rpcPort}?label=${encodeURIComponent(label)}`,
 			},
 			local: {
 				host: rpcLocalHost,
 				port: rpcPort,
 				username: rpcUser,
 				password: rpcPassword,
-				uri: `btcrpc://${rpcUser}:${rpcPassword}@${rpcLocalHost}:${rpcPort}?label=${encodeURIComponent(label)}`,
+				uri: `ltcrpc://${rpcUser}:${rpcPassword}@${rpcLocalHost}:${rpcPort}?label=${encodeURIComponent(label)}`,
 			},
 		},
 	}

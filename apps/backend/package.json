@@ -1,5 +1,5 @@
 {
-	"name": "@umbrel-bitcoin/backend",
+	"name": "@umbrel-litecoin/backend",
 	"type": "module",
 	"private": true,
 	"scripts": {

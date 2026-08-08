@@ -16,7 +16,7 @@ import {
 	LATEST,
 } from '#settings'
 
-const LEGACY_CONFIG_PATH = path.join(APP_STATE_DIR, 'bitcoin-config.json')
+const LEGACY_CONFIG_PATH = path.join(APP_STATE_DIR, 'litecoin-config.json')
 const NEW_CONFIG_PATH = path.join(APP_STATE_DIR, 'settings.json')
 
 // Normalise anything “boolean‑like” that may appear in the legacy file.
@@ -75,13 +75,13 @@ const LEGACY_TO_MODERN_MAP: Record<string, keyof SettingsSchema> = {
 	maxconnections: 'maxconnections',
 	maxreceivebuffer: 'maxreceivebuffer',
 	maxsendbuffer: 'maxsendbuffer',
-	// maxtimeadjustment: no longer in bitcoind -help-debug
+	// maxtimeadjustment: no longer in litecoind -help-debug
 	peertimeout: 'peertimeout',
 	timeout: 'timeout',
 	maxuploadtarget: 'maxuploadtarget',
 	cacheSizeMB: 'dbcache',
 	// prune: handled above to deconstruct the pruneSizeGB value
-	// mempoolFullRbf: no longer in bitcoind -help-debug
+	// mempoolFullRbf: no longer in litecoind -help-debug
 	datacarrier: 'datacarrier',
 	datacarriersize: 'datacarriersize',
 	permitbaremultisig: 'permitbaremultisig',
@@ -97,15 +97,15 @@ const LEGACY_TO_MODERN_MAP: Record<string, keyof SettingsSchema> = {
 }
 
 export async function migrateLegacyConfig(): Promise<SettingsSchema | undefined> {
-	// If the old bitcoin-config.json doesn't exist, we don't need to migrate
+	// If the old litecoin-config.json doesn't exist, we don't need to migrate
 	if (!(await fse.pathExists(LEGACY_CONFIG_PATH))) return
 
 	const legacyConfig = await fse.readJson(LEGACY_CONFIG_PATH).catch((err) => {
 		// throw a nicely formatted error message that is logged by the Fastify server logger
 		const msg =
 			err instanceof SyntaxError
-				? '[migration] Invalid JSON in legacy bitcoin-config.json'
-				: '[migration] Unable to read legacy bitcoin-config.json'
+				? '[migration] Invalid JSON in legacy litecoin-config.json'
+				: '[migration] Unable to read legacy litecoin-config.json'
 		throw new Error(`${msg}: ${err.message}`)
 	})
 
@@ -134,7 +134,7 @@ export async function migrateLegacyConfig(): Promise<SettingsSchema | undefined>
 	try {
 		const latestVersion = resolveVersion(LATEST)
 		const defaultValues = DefaultValuesForVersion(latestVersion)
-		// Merge defaults for latest Bitcoin Core version with coerced legacy values and validate against the
+		// Merge defaults for latest Litecoin Core version with coerced legacy values and validate against the
 		// versioned schema to produce a clean, current settings.json
 		const validated = schemaForVersion(LATEST).parse({
 			...defaultValues,
@@ -154,7 +154,7 @@ export async function migrateLegacyConfig(): Promise<SettingsSchema | undefined>
 	}
 }
 
-// Previous app's bitcoin-config.json for reference:
+// Previous app's litecoin-config.json for reference:
 
 // const DEFAULT_ADVANCED_SETTINGS = {
 //   clearnet: true,
@@ -189,5 +189,5 @@ export async function migrateLegacyConfig(): Promise<SettingsSchema | undefined>
 //   reindex: false,
 //   rest: false,
 //   rpcworkqueue: 128,
-//   network: constants.BITCOIN_DEFAULT_NETWORK
+//   network: constants.LITECOIN_DEFAULT_NETWORK
 // }

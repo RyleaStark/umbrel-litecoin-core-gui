@@ -1,6 +1,6 @@
 import type {SyncStatus} from '#types'
 
-// bitcoind's `verificationprogress` from the getblockchaininfo RPC can't reach 1 when the most recent block is in the past,
+// litecoind's `verificationprogress` from the getblockchaininfo RPC can't reach 1 when the most recent block is in the past,
 // so it will never be 1 in practice.
 // To ensure accurate percentage display during sync:
 // - When no headers have been downloaded, we set the progress to 0% (verificationprogress = 1 when no headers have been downloaded).
@@ -19,7 +19,7 @@ export function calcSyncPercent(syncStatus?: SyncStatus): number {
 	// If we're synced to the tip, we show 100%
 	if (blockHeight === validatedHeaderHeight) return 100
 
-	// Otherwise use bitcoind's verificationprogress, rounded to 2 decimals
+	// Otherwise use litecoind's verificationprogress, rounded to 2 decimals
 	// We floor it to ensure we don't show 100% until we're actually at the tip
 	return Math.floor(syncProgress * 10000) / 100
 }
@@ -35,15 +35,15 @@ export function syncStage(syncStatus?: SyncStatus): SyncStage {
 
 	const {blockHeight, validatedHeaderHeight, isInitialBlockDownload} = syncStatus
 
-	// If validatedHeaderHeight is 0, bitcoind is "Pre-synchronizing blockheaders"
-	// If bitcoin restarts during the next phase (sychronizing blockheaders), it will need to pre-sync headers again, but
+	// If validatedHeaderHeight is 0, litecoind is "Pre-synchronizing blockheaders"
+	// If litecoin restarts during the next phase (sychronizing blockheaders), it will need to pre-sync headers again, but
 	// validatedHeaderHeight will be > 0 from last run, so we will just show synchronizing headers stage in UI.
 	if (validatedHeaderHeight === 0) return 'pre-headers'
 
-	// If validatedHeaderHeight > 0 and blockHeight is 0, bitcoind is "Synchronizing blockheaders"
+	// If validatedHeaderHeight > 0 and blockHeight is 0, litecoind is "Synchronizing blockheaders"
 	if (validatedHeaderHeight > 0 && blockHeight === 0) return 'headers'
 
-	// If bitcoind is still showing IBD, we show IBD stage
+	// If litecoind is still showing IBD, we show IBD stage
 	if (isInitialBlockDownload) return 'IBD'
 
 	// Otherwise we are synced and out of IBD

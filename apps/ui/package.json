@@ -1,5 +1,5 @@
 {
-	"name": "@umbrel-bitcoin/ui",
+	"name": "@umbrel-litecoin/ui",
 	"type": "module",
 	"private": true,
 	"scripts": {

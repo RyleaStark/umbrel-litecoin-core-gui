@@ -1,4 +1,4 @@
-import {rpcClient} from '../bitcoind/rpc-client.js'
+import {rpcClient} from '../litecoind/rpc-client.js'
 
 import {ipToLatLng} from './ip-to-location.js'
 
@@ -7,7 +7,7 @@ import type {PeerInfo, PeerCount, PeerLocation, PeerLocationsResponse} from '#ty
 // Cached getpeerinfo response
 const getPeerInfoRPC = () => rpcClient.command<PeerInfo[]>('getpeerinfo')
 
-// Raw bitcoind getpeerinfo response
+// Raw litecoind getpeerinfo response
 export async function peerInfo(): Promise<PeerInfo[]> {
 	return getPeerInfoRPC()
 }

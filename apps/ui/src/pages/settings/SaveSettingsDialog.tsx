@@ -25,7 +25,7 @@ const VersionPinningStatus = ({formVersion}: {formVersion: string}) => {
 		return (
 			<span className='bg-green-500/10 border border-green-500/20 rounded-md p-3 block'>
 				<span className='text-green-200 text-xs'>
-					You have chosen to automatically run the latest Bitcoin Core version available in the Bitcoin Node app.
+					You have chosen to automatically run the latest Litecoin Core version available in the Litecoin Node app.
 				</span>
 			</span>
 		)
@@ -34,9 +34,9 @@ const VersionPinningStatus = ({formVersion}: {formVersion: string}) => {
 	return (
 		<span className='bg-orange-500/10 border border-orange-500/20 rounded-md p-3 block'>
 			<span className='text-orange-200 text-xs'>
-				You have chosen to stay on Bitcoin Core {formVersion} until you manually change it again in Settings. Your
-				Bitcoin Node app will continue to receive updates from the Umbrel App Store, but it won't be automatically
-				upgraded to the latest Bitcoin Core version available in the Bitcoin Node app.
+				You have chosen to stay on Litecoin Core {formVersion} until you manually change it again in Settings. Your
+				Litecoin Node app will continue to receive updates from the Umbrel App Store, but it won't be automatically
+				upgraded to the latest Litecoin Core version available in the Litecoin Node app.
 			</span>
 		</span>
 	)
@@ -56,7 +56,7 @@ export default function SaveSettingsDialog({
 	const renderDialogContent = () => (
 		<>
 			{isVersionChange && <VersionPinningStatus formVersion={formVersion} />}
-			<span className='text-[13px]'>Your Bitcoin node will restart to apply these settings.</span>
+			<span className='text-[13px]'>Your Litecoin node will restart to apply these settings.</span>
 		</>
 	)
 

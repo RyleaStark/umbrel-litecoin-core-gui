@@ -5,7 +5,7 @@ import fastifyWs from '@fastify/websocket'
 import fastifyStatic from '@fastify/static'
 import helmet from '@fastify/helmet'
 
-import {bootBitcoind, bitcoind} from './modules/bitcoind/bitcoind.js'
+import {bootLitecoind, litecoind} from './modules/litecoind/litecoind.js'
 import {ensureDirs} from './lib/paths.js'
 import routes from './routes.js'
 
@@ -14,10 +14,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // Ensure that the required data directories exist before we start
 await ensureDirs()
 
-// Start bitcoind without blocking server start
-bootBitcoind().catch((error) => {
-	bitcoind.setLastError(error as Error) // record for /status
-	app.log.error(error, 'Bitcoind bootstrap failed.')
+// Start litecoind without blocking server start
+bootLitecoind().catch((error) => {
+	litecoind.setLastError(error as Error) // record for /status
+	app.log.error(error, 'Litecoind bootstrap failed.')
 })
 
 // Create the HTTP server and register the routes
@@ -38,7 +38,7 @@ await app.register(fastifyWs)
 
 // Detect dead WebSocket connections. Without this, a client whose network
 // drops silently (no close frame) leaves a phantom connection that leaks
-// listeners forever — especially on the /ws/bitcoind/exit endpoint which
+// listeners forever — especially on the /ws/litecoind/exit endpoint which
 // rarely sends data and would never trigger TCP failure detection.
 const HEARTBEAT_MS = 30_000
 const aliveClients = new WeakSet<import('ws').WebSocket>()
@@ -82,8 +82,8 @@ app
 // Log unhandled rejections
 process.on('unhandledRejection', (reason) => app.log.error({reason}, 'Unhandled rejection'))
 
-// Graceful shutdown of bitcoind
+// Graceful shutdown of litecoind
 // TODO: fix for dev: [tsx] Previous process hasn't exited yet. Force killing...
-const shutdown = () => bitcoind.stop().then(() => process.exit(0))
+const shutdown = () => litecoind.stop().then(() => process.exit(0))
 process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)

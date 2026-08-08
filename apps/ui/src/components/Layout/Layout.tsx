@@ -11,7 +11,7 @@ import Background from './Background'
 
 import {cn} from '@/lib/utils'
 import {usePrefetchInsights} from '@/hooks/usePrefetchInsights'
-import {useBitcoindExitSocket} from '@/hooks/useBitcoindExitSocket'
+import {useLitecoindExitSocket} from '@/hooks/useLitecoindExitSocket'
 import {useBlockStream} from '@/hooks/useBlockStream'
 
 // React Router injects the routed page in <Outlet/>.
@@ -30,8 +30,8 @@ export function Layout() {
 	// Fires after the first paint, so it never delays a page's render or its own fetches
 	usePrefetchInsights()
 
-	// Listen for bitcoind exit events so we can show a toast notification if it crashes / has crashed
-	useBitcoindExitSocket()
+	// Listen for litecoind exit events so we can show a toast notification if it crashes / has crashed
+	useLitecoindExitSocket()
 
 	// Single WebSocket for real-time block updates — feeds all block query caches
 	useBlockStream()

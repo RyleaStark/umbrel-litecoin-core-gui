@@ -13,12 +13,12 @@ import StatusDot from './StatusDot'
 import Blocks from './Blocks'
 import GlobeInfo from './GlobeInfo'
 
-import {useBitcoindStatus} from '@/hooks/useBitcoind'
+import {useLitecoindStatus} from '@/hooks/useLitecoind'
 import {useSyncStatus} from '@/hooks/useSyncStatus'
 import {calcSyncPercent, syncStage} from '@/lib/sync-progress'
 
 export default function HomePage() {
-	const {data: status, isError, isLoading: isStatusLoading} = useBitcoindStatus()
+	const {data: status, isError, isLoading: isStatusLoading} = useLitecoindStatus()
 	const {data: syncStatus, isLoading} = useSyncStatus()
 
 	// Responsive Globe sizing
@@ -53,8 +53,8 @@ export default function HomePage() {
 	let dialogContent: {title: string; description: string} | null = null
 
 	// Good explanations from Peter Wuille on sync stages:
-	// - https://bitcoin.stackexchange.com/questions/121292/how-does-block-synchronization-work-in-bitcoin-core-today
-	// - https://bitcoin.stackexchange.com/questions/76018/how-does-headers-first-prevent-disk-fill-attack/121235#121235
+	// - https://litecoin.stackexchange.com/questions/121292/how-does-block-synchronization-work-in-litecoin-core-today
+	// - https://litecoin.stackexchange.com/questions/76018/how-does-headers-first-prevent-disk-fill-attack/121235#121235
 	switch (stage) {
 		case 'pre-headers':
 			// TODO: break this out into a component

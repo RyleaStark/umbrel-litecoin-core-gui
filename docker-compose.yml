@@ -23,7 +23,7 @@ services:
     volumes:
       - .:/repo # live source for hot reload
       - ./data/__node_modules_linux__:/repo/node_modules # deps cache shared with the ui container
-      - ./data:/data # persistent app, bitcoin, i2pd dirs
+      - ./data:/data # persistent app, litecoin, i2pd dirs
 
     # We install workspaces only when package-lock.json changes (uses hash guard).
     # TODO: handle changes to non-root package.json files.
@@ -50,15 +50,15 @@ services:
       retries: 20
     environment:
       # DATA DIRECTORY SETTINGS
-      # BITCOIN_DIR: bitcoin-dir-override
+      # LITECOIN_DIR: litecoin-dir-override
       # APP_STATE_DIR: app-state-dir-override
 
-      # BITCOIN CORE BINARY SETTINGS
-      # BITCOIND_BIN: bitcoind-binary-path-override
-      # BITCOIN_BIN: bitcoin-wrapper-binary-path-override
-      BITCOIND_EXTRA_ARGS: '-deprecatedrpc=create_bdb' # used to pass extra startup flags to Bitcoin Core
+      # LITECOIN CORE BINARY SETTINGS
+      # LITECOIND_BIN: litecoind-binary-path-override
+      # LITECOIN_BIN: litecoin-wrapper-binary-path-override
+      LITECOIND_EXTRA_ARGS: '-deprecatedrpc=create_bdb' # used to pass extra startup flags to Litecoin Core
 
-      # BITCOIND CONF FILE SETTINGS
+      # LITECOIND CONF FILE SETTINGS
       APPS_SUBNET: '10.21.0.0/16' # used for rpcallowip
       P2P_PORT: 8333 # port, bind (also used for connect details)
       P2P_WHITEBIND_PORT: 8335 # Additional inbound P2P listener granting whitelisted permissions (whitebind) to this port; for trusted internal apps only; do not publish externally
@@ -77,7 +77,7 @@ services:
       I2P_SAM_PORT: 7656 # i2psam
 
       # RPC CLIENT SETTINGS
-      BITCOIND_IP: 10.21.21.8 # host for the rpc client. Also used for bitcoind conf file rpcbind & bind.
+      LITECOIND_IP: 10.21.21.8 # host for the rpc client. Also used for litecoind conf file rpcbind & bind.
       RPC_USER: umbrel # also shown in the connect modal
       RPC_PASS: moneyprintergobrrr # also shown in the connect modal
 
@@ -90,7 +90,7 @@ services:
       DEFAULT_CHAIN: regtest # dev override to set the chain on first start to non-mainnet.
     networks:
       devnet:
-        ipv4_address: 10.21.21.8 # matches existing APP_BITCOIN_NODE_IP on umbrelOS app store
+        ipv4_address: 10.21.21.8 # matches existing APP_LITECOIN_NODE_IP on umbrelOS app store
 
   # UI container with vite hot-reload.
   # In production the React bundle is baked into backend, but in dev we have a separate ui container for vite hot-reload.
@@ -143,7 +143,7 @@ services:
       '
     networks:
       devnet:
-        ipv4_address: 10.21.22.10 # matches existing APP_BITCOIN_TOR_PROXY_IP on umbrelOS app store
+        ipv4_address: 10.21.22.10 # matches existing APP_LITECOIN_TOR_PROXY_IP on umbrelOS app store
 
   i2p:
     image: purplei2p/i2pd:release-2.44.0@sha256:d154a599793c393cf9c91f8549ba7ece0bb40e5728e1813aa6dd4c210aa606f6
@@ -154,4 +154,4 @@ services:
       - ./data/i2pd:/home/i2pd/data
     networks:
       devnet:
-        ipv4_address: 10.21.22.11 # matches existing APP_BITCOIN_I2P_DAEMON_IP on umbrelOS app store
+        ipv4_address: 10.21.22.11 # matches existing APP_LITECOIN_I2P_DAEMON_IP on umbrelOS app store

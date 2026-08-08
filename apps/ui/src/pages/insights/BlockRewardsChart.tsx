@@ -5,7 +5,7 @@ import {formatDistanceStrict} from 'date-fns'
 import {ChartContainer, ChartTooltip} from '@/components/ui/chart'
 
 import {ChartCard, DEFAULT_GRID_PROPS, DEFAULT_CHART_MARGIN, makeXAxis, makeYAxis} from './ChartDefaults'
-import {sliceLast24h, calculateHoursAgo, hoursToMs, satsToBTC} from '@/lib/chartHelpers'
+import {sliceLast24h, calculateHoursAgo, hoursToMs, satsToLTC} from '@/lib/chartHelpers'
 
 import {useBlocks} from '@/hooks/useBlocks'
 import {syncStage} from '@/lib/sync-progress'
@@ -35,8 +35,8 @@ export default function RewardsChart() {
 	const chartData = slice.map(({height, subsidySat, feesSat, time}) => ({
 		block: height,
 		hoursAgo: calculateHoursAgo(time),
-		subsidyBTC: satsToBTC(subsidySat),
-		feesBTC: satsToBTC(feesSat),
+		subsidyLTC: satsToLTC(subsidySat),
+		feesLTC: satsToLTC(feesSat),
 	}))
 
 	// Defer the data to avoid blocking the main thread and allow the chart to render immediately and the dock tab to animate smoothly
@@ -96,13 +96,13 @@ export default function RewardsChart() {
 									<div className='flex items-center gap-2'>
 										<div className='h-2 w-2 rounded-[2px]' style={{backgroundColor: 'hsla(29,100%,51%,0.44)'}} />
 										<span className='text-white/60'>Subsidy</span>
-										<span className='ml-auto font-mono tabular-nums'>{d.subsidyBTC.toFixed(3)}</span>
+										<span className='ml-auto font-mono tabular-nums'>{d.subsidyLTC.toFixed(3)}</span>
 									</div>
 
 									<div className='flex items-center gap-2'>
 										<div className='h-2 w-2 rounded-[2px]' style={{backgroundColor: '#FF7E05'}} />
 										<span className='text-white/60'>Fees</span>
-										<span className='ml-auto font-mono tabular-nums'>{d.feesBTC.toFixed(3)}</span>
+										<span className='ml-auto font-mono tabular-nums'>{d.feesLTC.toFixed(3)}</span>
 									</div>
 								</div>
 							)
@@ -112,7 +112,7 @@ export default function RewardsChart() {
 					{/* axes / grid / data */}
 					<CartesianGrid {...DEFAULT_GRID_PROPS} />
 
-					<YAxis {...makeYAxis('Bitcoin')} domain={[0, (dataMax: number) => Math.ceil(dataMax)]} />
+					<YAxis {...makeYAxis('Litecoin')} domain={[0, (dataMax: number) => Math.ceil(dataMax)]} />
 					<XAxis
 						{...makeXAxis(`Last 24h`)}
 						dataKey='block'
@@ -123,14 +123,14 @@ export default function RewardsChart() {
 					/>
 
 					<Bar
-						dataKey='subsidyBTC'
+						dataKey='subsidyLTC'
 						stackId='a'
 						fill={`url(#${fillId})`}
 						// radius={[0, 0, 4, 4]}
 						isAnimationActive={false}
 						barSize={10}
 					/>
-					<Bar dataKey='feesBTC' stackId='a' fill='#FF7E05' radius={[2, 2, 0, 0]} isAnimationActive={false} />
+					<Bar dataKey='feesLTC' stackId='a' fill='#FF7E05' radius={[2, 2, 0, 0]} isAnimationActive={false} />
 				</BarChart>
 			</ChartContainer>
 		</ChartCard>

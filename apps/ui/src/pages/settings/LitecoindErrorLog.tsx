@@ -8,19 +8,19 @@ import {useSearchParams} from 'react-router-dom'
 import {Checkbox} from '@/components/ui/checkbox'
 import FadeScrollArea from '@/components/shared/FadeScrollArea'
 
-import {useBitcoindExitInfo} from '@/hooks/useBitcoindExitInfo'
+import {useLitecoindExitInfo} from '@/hooks/useLitecoindExitInfo'
 import {Button} from '@/components/ui/button'
 
 // Simple regex to filter log lines by severity (case-insensitive)
 const ERROR_REGEX = /(error|fatal|panic|disk full|corrupt|invalid)/i
 const WARN_REGEX = /(warn)/i
 
-export default function BitcoindErrorLog({
+export default function LitecoindErrorLog({
 	settingsViewportRef,
 }: {
 	settingsViewportRef?: React.RefObject<HTMLDivElement | null>
 }) {
-	const {data: exitInfo} = useBitcoindExitInfo()
+	const {data: exitInfo} = useLitecoindExitInfo()
 	const [errorsOnly, setErrorsOnly] = useState(false)
 	const fadeScrollRef = useRef<HTMLDivElement | null>(null)
 	const componentRef = useRef<HTMLDivElement | null>(null)
@@ -57,7 +57,7 @@ export default function BitcoindErrorLog({
 		const url = URL.createObjectURL(blob)
 		const a = document.createElement('a')
 		a.href = url
-		a.download = 'bitcoin-log-tail.txt'
+		a.download = 'litecoin-log-tail.txt'
 		document.body.appendChild(a)
 		a.click()
 		a.remove()
@@ -99,7 +99,7 @@ export default function BitcoindErrorLog({
 					className='mb-6 rounded-lg border border-red-900 bg-red-950/80 p-4'
 				>
 					<p className='mb-2 text-sm text-red-200'>
-						Bitcoin Core stopped unexpectedly. Review the logs below for more information.
+						Litecoin Core stopped unexpectedly. Review the logs below for more information.
 					</p>
 
 					{/* scrollable log viewer with FadeScrollArea */}

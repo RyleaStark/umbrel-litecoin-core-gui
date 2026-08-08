@@ -1,4 +1,4 @@
-// This is our validation schema that is derived from the settings metadata and Bitcoin Core version.
+// This is our validation schema that is derived from the settings metadata and Litecoin Core version.
 // TODO: Consider adding a `superRefine` to handle cross-field validation.
 
 import {z} from 'zod'
@@ -14,7 +14,7 @@ function buildSettingsSchema(settingsMetadata: Record<string, Option>): z.ZodObj
 		switch (meta.kind) {
 			// numbers (e.g., dbcache)
 			case 'number': {
-				let schema = z.number({invalid_type_error: `${meta.bitcoinLabel} must be a number`})
+				let schema = z.number({invalid_type_error: `${meta.litecoinLabel} must be a number`})
 
 				// Enforce integer only when step implies integer inputs (default or integer step)
 				const stepImpliesInteger = meta.step === undefined || Number.isInteger(meta.step)
@@ -23,12 +23,12 @@ function buildSettingsSchema(settingsMetadata: Record<string, Option>): z.ZodObj
 				// Custom error messages for bounds
 				if (meta.min !== undefined) {
 					schema = schema.min(meta.min, {
-						message: `Minimum ${meta.bitcoinLabel} is ${meta.min}${meta.unit ?? ''}`,
+						message: `Minimum ${meta.litecoinLabel} is ${meta.min}${meta.unit ?? ''}`,
 					})
 				}
 				if (meta.max !== undefined) {
 					schema = schema.max(meta.max, {
-						message: `Maximum ${meta.bitcoinLabel} is ${meta.max}${meta.unit ?? ''}`,
+						message: `Maximum ${meta.litecoinLabel} is ${meta.max}${meta.unit ?? ''}`,
 					})
 				}
 				schemaMap[key] = schema
@@ -37,7 +37,7 @@ function buildSettingsSchema(settingsMetadata: Record<string, Option>): z.ZodObj
 
 			// toggles (booleans) (e.g., txindex)
 			case 'toggle': {
-				schemaMap[key] = z.boolean({invalid_type_error: `${meta.bitcoinLabel} must be true or false`})
+				schemaMap[key] = z.boolean({invalid_type_error: `${meta.litecoinLabel} must be true or false`})
 				break
 			}
 
@@ -47,7 +47,7 @@ function buildSettingsSchema(settingsMetadata: Record<string, Option>): z.ZodObj
 				const base = z.array(z.enum(values))
 				schemaMap[key] =
 					(meta.requireAtLeastOne ?? true)
-						? base.nonempty({message: `${meta.bitcoinLabel}: select at least one`})
+						? base.nonempty({message: `${meta.litecoinLabel}: select at least one`})
 						: base
 				break
 			}
@@ -66,9 +66,9 @@ function buildSettingsSchema(settingsMetadata: Record<string, Option>): z.ZodObj
 
 // Build a version-aware schema that validates the settings against the resolved settings-metadata for the given Core version.
 export function schemaForVersion(version: SelectedVersion) {
-	// Resolve the desired version (can be 'latest' or a specific Bitcoin Core version) to a concrete Core version
-	const bitcoinVersion = resolveVersion(version)
-	const settingsMetadata = settingsMetadataForVersion(bitcoinVersion)
+	// Resolve the desired version (can be 'latest' or a specific Litecoin Core version) to a concrete Core version
+	const litecoinVersion = resolveVersion(version)
+	const settingsMetadata = settingsMetadataForVersion(litecoinVersion)
 	return buildSettingsSchema(settingsMetadata)
 }
 

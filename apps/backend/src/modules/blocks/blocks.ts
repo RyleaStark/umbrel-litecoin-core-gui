@@ -21,7 +21,7 @@
 // On startup/restart we prime the cache (5 blocks if not synced, 200 if synced).
 // The first ZMQ event that sees blocks === headers triggers a background 200-block
 // prime so the insights page data is ready.
-// On bitcoind stop (e.g. network switch), the cache is cleared to avoid serving
+// On litecoind stop (e.g. network switch), the cache is cleared to avoid serving
 // stale blocks from the old chain.
 
 import {setTimeout} from 'timers/promises'
@@ -30,8 +30,8 @@ import {EventEmitter} from 'node:events'
 import type WebSocket from 'ws'
 import PQueue from 'p-queue'
 
-import {rpcClient} from '../bitcoind/rpc-client.js'
-import {bitcoind} from '../bitcoind/bitcoind.js'
+import {rpcClient} from '../litecoind/rpc-client.js'
+import {litecoind} from '../litecoind/litecoind.js'
 import {blockStream} from './zmq-subscriber.js'
 
 import type {Block, RawBlock, RawTransaction} from '#types'
@@ -92,7 +92,7 @@ function transactionGrid(transactions: RawTransaction[], gridSize: number) {
 
 // --- Block constructors ---
 
-// Partial type of bitcoind's getblockstats RPC
+// Partial type of litecoind's getblockstats RPC
 type BlockStats = {
 	height: number
 	time: number
@@ -213,7 +213,7 @@ const newBlockEmitter = new EventEmitter()
 let processing = false
 let fullPrimeComplete = false
 
-// Bitcoin Core's ZMQ block notifiers are silent during IBD, so this only fires
+// Litecoin Core's ZMQ block notifiers are silent during IBD, so this only fires
 // when IBD is complete. During post-IBD catch-up (blocks < headers), we skip
 // until the node reaches the tip. Once at the tip, we fetch the new block by
 // hash, cache it, and broadcast to WebSocket clients.
@@ -273,7 +273,7 @@ async function prime() {
 	if (priming) return
 	priming = true
 	try {
-		await setTimeout(5000) // wait for bitcoind to be ready
+		await setTimeout(5000) // wait for litecoind to be ready
 		const {blocks, headers} = await rpcClient.command<{blocks: number; headers: number}>('getblockchaininfo')
 		const atTip = blocks === headers
 		if (atTip) fullPrimeComplete = true
@@ -291,17 +291,17 @@ function reset() {
 	priming = false
 }
 
-// --- Bitcoind lifecycle ---
-// When bitcoind restarts (e.g. user switches network), the in-memory cache
+// --- Litecoind lifecycle ---
+// When litecoind restarts (e.g. user switches network), the in-memory cache
 // would serve stale blocks from the old chain. Clear it on stop, re-prime on start.
 
-bitcoind.events.on('stop', () => {
-	console.log('[blocks] bitcoind stopped, clearing cache')
+litecoind.events.on('stop', () => {
+	console.log('[blocks] litecoind stopped, clearing cache')
 	reset()
 })
 
-bitcoind.events.on('start', () => {
-	console.log('[blocks] bitcoind started, priming cache')
+litecoind.events.on('start', () => {
+	console.log('[blocks] litecoind started, priming cache')
 	prime().catch((err) => console.error('[blocks] prime error:', err))
 })
 

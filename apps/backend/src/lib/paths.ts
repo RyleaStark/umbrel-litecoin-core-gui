@@ -2,17 +2,17 @@ import path from 'node:path'
 import {fileURLToPath} from 'node:url'
 import fse from 'fs-extra'
 
-// bitcoind binary
-export const BITCOIND_BIN = process.env['BITCOIND_BIN'] || 'bitcoind'
+// litecoind binary
+export const LITECOIND_BIN = process.env['LITECOIND_BIN'] || 'litecoind'
 
-// bitcoin wrapper binary used for multiprocess mode
-export const BITCOIN_BIN = process.env['BITCOIN_BIN'] || 'bitcoin'
+// litecoin wrapper binary used for multiprocess mode
+export const LITECOIN_BIN = process.env['LITECOIN_BIN'] || 'litecoin'
 
 // Absolute path to the monorepo root
 export const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../../')
 
-// bitcoind -datadir (data/bitcoin)
-export const BITCOIN_DIR = process.env['BITCOIN_DIR'] || path.join(REPO_ROOT, 'data', 'bitcoin')
+// litecoind -datadir (data/litecoin)
+export const LITECOIN_DIR = process.env['LITECOIN_DIR'] || path.join(REPO_ROOT, 'data', 'litecoin')
 
 // app config data dir (data/app)
 export const APP_STATE_DIR = process.env['APP_STATE_DIR'] || path.join(REPO_ROOT, 'data', 'app')
@@ -20,17 +20,17 @@ export const APP_STATE_DIR = process.env['APP_STATE_DIR'] || path.join(REPO_ROOT
 // settings.json file path
 export const SETTINGS_JSON = path.join(APP_STATE_DIR, 'settings.json')
 
-// bitcoin.conf file paths
-export const BITCOIN_CONF = path.join(BITCOIN_DIR, 'bitcoin.conf')
-export const UMBREL_BITCOIN_CONF = path.join(BITCOIN_DIR, 'umbrel-bitcoin.conf')
+// litecoin.conf file paths
+export const LITECOIN_CONF = path.join(LITECOIN_DIR, 'litecoin.conf')
+export const UMBREL_LITECOIN_CONF = path.join(LITECOIN_DIR, 'umbrel-litecoin.conf')
 
-// Bitcoin Core installation path for bitcoind versions
-export const BITCOIN_CORE_VERSIONS_DIR = '/opt/bitcoind'
+// Litecoin Core installation path for litecoind versions
+export const LITECOIN_CORE_VERSIONS_DIR = '/opt/litecoind'
 
-// Symbolic link for default bitcoind binary
-export const BITCOIN_CORE_CURRENT_SYMLINK = `${BITCOIN_CORE_VERSIONS_DIR}/current`
+// Symbolic link for default litecoind binary
+export const LITECOIN_CORE_CURRENT_SYMLINK = `${LITECOIN_CORE_VERSIONS_DIR}/current`
 
 // Ensure that the required data directories exist
 export async function ensureDirs() {
-	await Promise.all([fse.ensureDir(BITCOIN_DIR), fse.ensureDir(APP_STATE_DIR)])
+	await Promise.all([fse.ensureDir(LITECOIN_DIR), fse.ensureDir(APP_STATE_DIR)])
 }

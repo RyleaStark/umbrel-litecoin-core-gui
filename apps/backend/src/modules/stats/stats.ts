@@ -1,6 +1,6 @@
 import {peerCount} from '../peers/peers.js'
-import {rpcClient} from '../bitcoind/rpc-client.js'
-import {bitcoind} from '../bitcoind/bitcoind.js'
+import {rpcClient} from '../litecoind/rpc-client.js'
+import {litecoind} from '../litecoind/litecoind.js'
 import type {Stats} from '#types'
 
 export async function summary(): Promise<Stats> {
@@ -10,7 +10,7 @@ export async function summary(): Promise<Stats> {
 		rpcClient.command<{size_on_disk: number}>('getblockchaininfo'),
 	])
 
-	const {startedAt, running} = bitcoind.status()
+	const {startedAt, running} = litecoind.status()
 
 	return {
 		peers: peerSum.total,

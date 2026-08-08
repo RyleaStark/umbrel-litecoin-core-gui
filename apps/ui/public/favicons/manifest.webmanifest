@@ -1,7 +1,7 @@
 {
-	"name": "Bitcoin Node",
-	"short_name": "Bitcoin Node",
-	"description": "Bitcoin Node",
+	"name": "Litecoin Node",
+	"short_name": "Litecoin Node",
+	"description": "Litecoin Node",
 	"dir": "auto",
 	"lang": "en-US",
 	"display": "standalone",

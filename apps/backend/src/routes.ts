@@ -4,7 +4,7 @@ import fp from 'fastify-plugin'
 import type {FastifyError, FastifyInstance} from 'fastify'
 import {ZodError} from 'zod'
 
-import * as bitcoind from './modules/bitcoind/bitcoind.js'
+import * as litecoind from './modules/litecoind/litecoind.js'
 import * as peers from './modules/peers/peers.js'
 import * as blocks from './modules/blocks/blocks.js'
 import * as transactions from './modules/transactions/transactions.js'
@@ -22,15 +22,15 @@ const WS_TOKEN = randomBytes(16).toString('hex')
 export default fp(async (app: FastifyInstance) => {
 	const BASE = '/api'
 
-	// bitcoind manager routes
-	const bitcoindBase = `${BASE}/bitcoind`
+	// litecoind manager routes
+	const litecoindBase = `${BASE}/litecoind`
 
-	app.get(`${bitcoindBase}/version`, bitcoind.version)
-	app.get(`${bitcoindBase}/status`, bitcoind.status)
-	// app.post(`${bitcoindBase}/start`, bitcoind.start)
-	// app.post(`${bitcoindBase}/stop`, bitcoind.stop)
-	// app.post(`${bitcoindBase}/restart`, bitcoind.restart)
-	app.get(`${bitcoindBase}/exit-info`, bitcoind.exitInfo)
+	app.get(`${litecoindBase}/version`, litecoind.version)
+	app.get(`${litecoindBase}/status`, litecoind.status)
+	// app.post(`${litecoindBase}/start`, litecoind.start)
+	// app.post(`${litecoindBase}/stop`, litecoind.stop)
+	// app.post(`${litecoindBase}/restart`, litecoind.restart)
+	app.get(`${litecoindBase}/exit-info`, litecoind.exitInfo)
 
 	// rpc routes
 	const rpcBase = `${BASE}/rpc`
@@ -94,14 +94,14 @@ export default fp(async (app: FastifyInstance) => {
 		if ((request.query as {token?: string})?.token !== WS_TOKEN) return reply.code(401).send('Unauthorized')
 	})
 
-	// new blocks from bitcoind via zmq
+	// new blocks from litecoind via zmq
 	app.get(`${wsBase}/blocks`, {websocket: true}, blocks.wsStream)
 
-	// new transactions from bitcoind via zmq
+	// new transactions from litecoind via zmq
 	app.get(`${wsBase}/transactions`, {websocket: true}, transactions.wsStream)
 
-	// bitcoind exit events
-	app.get(`${wsBase}/bitcoind/exit`, {websocket: true}, bitcoind.wsExitStream)
+	// litecoind exit events
+	app.get(`${wsBase}/litecoind/exit`, {websocket: true}, litecoind.wsExitStream)
 
 	// Global error handler
 	// Catches *all* uncaught errors from any route / hook

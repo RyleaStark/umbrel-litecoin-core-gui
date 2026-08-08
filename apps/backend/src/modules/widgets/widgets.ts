@@ -1,6 +1,6 @@
 import {syncStatus} from '../sync/sync.js'
 import {summary} from '../stats/stats.js'
-import {rpcClient} from '../bitcoind/rpc-client.js'
+import {rpcClient} from '../litecoind/rpc-client.js'
 import prettyBytes from 'pretty-bytes'
 import type {SyncStatus} from '#types'
 
@@ -34,7 +34,7 @@ function calcSyncPercent(syncStatus: SyncStatus | undefined): number {
 	// If we're synced to the tip, we show 100%
 	if (blockHeight === validatedHeaderHeight) return 100
 
-	// Otherwise use bitcoind's verificationprogress, rounded to 2 decimals
+	// Otherwise use litecoind's verificationprogress, rounded to 2 decimals
 	// We floor it to ensure we don't show 100% until we're actually at the tip
 	return Math.floor(syncProgress * 10000) / 100
 }

@@ -5,8 +5,8 @@ import {createHmac, randomBytes} from 'node:crypto'
 import fse from 'fs-extra'
 import {writeWithBackup} from './fs-helpers.js'
 
-import {BITCOIN_DIR, SETTINGS_JSON, UMBREL_BITCOIN_CONF, BITCOIN_CONF} from '../../lib/paths.js'
-import {restart} from '../bitcoind/bitcoind.js'
+import {LITECOIN_DIR, SETTINGS_JSON, UMBREL_LITECOIN_CONF, LITECOIN_CONF} from '../../lib/paths.js'
+import {restart} from '../litecoind/litecoind.js'
 import {
 	DefaultValuesForVersion,
 	LATEST,
@@ -18,15 +18,15 @@ import {
 } from '#settings'
 import {migrateLegacyConfig} from './migration.js'
 
-const BITCOIN_CONF_INCLUDE_LINE = `includeconf=${path.basename(UMBREL_BITCOIN_CONF)}`
+const LITECOIN_CONF_INCLUDE_LINE = `includeconf=${path.basename(UMBREL_LITECOIN_CONF)}`
 
-const BITCOIN_CONF_BANNER = [
+const LITECOIN_CONF_BANNER = [
 	'# Load additional configuration file, relative to the data directory.',
-	BITCOIN_CONF_INCLUDE_LINE,
+	LITECOIN_CONF_INCLUDE_LINE,
 ].join('\n')
 
-// Keys that should NOT be written to bitcoin.conf
-const NON_BITCOIN_CONF_KEYS = new Set<keyof SettingsSchema>(['version', 'ipc'])
+// Keys that should NOT be written to litecoin.conf
+const NON_LITECOIN_CONF_KEYS = new Set<keyof SettingsSchema>(['version', 'ipc'])
 
 // In-memory cache of the current settings
 // We update this cache with the latest settings every time we update the settings.json file
@@ -41,7 +41,7 @@ function mergeWithDefaults(partial: Partial<SettingsSchema>): SettingsSchema {
 	return {...defaults, ...partial} as SettingsSchema
 }
 
-// Keep only keys valid for the selected Bitcoin Core version.
+// Keep only keys valid for the selected Litecoin Core version.
 // Our zod schema is `.passthrough()` (to avoid UX issues during version switches),
 // so stale/unknown keys could otherwise survive frontend validation. This filter ensures we only
 // persist settings that exist for the resolved Core version.
@@ -93,7 +93,7 @@ async function loadAndValidateSettings(): Promise<SettingsSchema> {
 	return schemaForVersion(selectedVersion).parse(filtered) as SettingsSchema
 }
 
-// Writes out each setting as a line in the umbrel-bitcoin.conf file
+// Writes out each setting as a line in the umbrel-litecoin.conf file
 // Handles multiple settings with the same key (onlynet, listen)
 function generateBaseConfLines(settings: SettingsSchema): string[] {
 	const lines: string[] = []
@@ -101,8 +101,8 @@ function generateBaseConfLines(settings: SettingsSchema): string[] {
 	for (const key of Object.keys(settings) as (keyof SettingsSchema)[]) {
 		const value = settings[key]
 
-		// Skip settings that should not be written to bitcoin.conf (e.g, bitcoin core version)
-		if (NON_BITCOIN_CONF_KEYS.has(key)) continue
+		// Skip settings that should not be written to litecoin.conf (e.g, litecoin core version)
+		if (NON_LITECOIN_CONF_KEYS.has(key)) continue
 
 		switch (key) {
 			// "onlynet": turn each named network into one or more "onlynet=..." lines
@@ -198,33 +198,33 @@ function handlePruneConversion(lines: string[], settings: SettingsSchema): strin
 	return lines
 }
 
-// Converts fee rates from sat/vB (UI and settings.json) to BTC/kvB (bitcoin.conf)
+// Converts fee rates from sat/vB (UI and settings.json) to LTC/kvB (litecoin.conf)
 function handleFeeRateConversion(lines: string[], settings: SettingsSchema): string[] {
-	const convertSatPerVbToBtcPerKb = (satPerVb: number): string => (satPerVb * 1e-5).toFixed(8)
+	const convertLitoshiPerVbToLtcPerKb = (litoshiPerVb: number): string => (litoshiPerVb * 1e-5).toFixed(8)
 
 	const updatedLines = lines.filter(
 		(l) => !l.startsWith('minrelaytxfee=') && !l.startsWith('blockmintxfee=') && !l.startsWith('incrementalrelayfee='),
 	)
 
 	if (typeof settings['minrelaytxfee'] === 'number') {
-		const btcPerKb = convertSatPerVbToBtcPerKb(settings['minrelaytxfee'])
-		updatedLines.push(`minrelaytxfee=${btcPerKb}`)
+		const ltcPerKb = convertLitoshiPerVbToLtcPerKb(settings['minrelaytxfee'])
+		updatedLines.push(`minrelaytxfee=${ltcPerKb}`)
 	}
 
 	if (typeof settings['blockmintxfee'] === 'number') {
-		const btcPerKb = convertSatPerVbToBtcPerKb(settings['blockmintxfee'])
-		updatedLines.push(`blockmintxfee=${btcPerKb}`)
+		const ltcPerKb = convertLitoshiPerVbToLtcPerKb(settings['blockmintxfee'])
+		updatedLines.push(`blockmintxfee=${ltcPerKb}`)
 	}
 
 	if (typeof settings['incrementalrelayfee'] === 'number') {
-		const btcPerKb = convertSatPerVbToBtcPerKb(settings['incrementalrelayfee'])
-		updatedLines.push(`incrementalrelayfee=${btcPerKb}`)
+		const ltcPerKb = convertLitoshiPerVbToLtcPerKb(settings['incrementalrelayfee'])
+		updatedLines.push(`incrementalrelayfee=${ltcPerKb}`)
 	}
 
 	return updatedLines
 }
 
-// HANDLERS FOR LINES WE ALWAYS ADD TO umbrel-bitcoin.conf
+// HANDLERS FOR LINES WE ALWAYS ADD TO umbrel-litecoin.conf
 
 function appendRpcAuth(lines: string[]): string[] {
 	const rpcUser = process.env['RPC_USER'] || 'umbrel'
@@ -276,11 +276,11 @@ function appendNetworkStanza(lines: string[], settings: SettingsSchema): string[
 		// Additional inbound P2P listener granting whitelisted permissions (whitebind). Intended for trusted internal apps; We do not publish externally.
 		lines.push(`whitebind=0.0.0.0:${whitebindPort}`)
 	}
-	lines.push(`bind=${process.env['BITCOIND_IP']}:${process.env['TOR_PORT'] || '8334'}=onion`)
+	lines.push(`bind=${process.env['LITECOIND_IP']}:${process.env['TOR_PORT'] || '8334'}=onion`)
 
 	// rpc binds
 	lines.push(`rpcport=${process.env['RPC_PORT'] || '8332'}`)
-	lines.push(`rpcbind=${process.env['BITCOIND_IP']}`)
+	lines.push(`rpcbind=${process.env['LITECOIND_IP']}`)
 	lines.push('rpcbind=127.0.0.1')
 
 	return lines
@@ -294,7 +294,7 @@ function generateConfLines(settings: SettingsSchema): string[] {
 	lines = handleTor(lines, settings)
 	lines = handleI2P(lines, settings)
 
-	// apply unit conversions (we use different units in the UI and settings.json than what bitcoin.conf expects for certain settings)
+	// apply unit conversions (we use different units in the UI and settings.json than what litecoin.conf expects for certain settings)
 	lines = handlePruneConversion(lines, settings)
 	lines = handleFeeRateConversion(lines, settings)
 
@@ -307,24 +307,24 @@ function generateConfLines(settings: SettingsSchema): string[] {
 	return lines
 }
 
-// Write out umbrel-bitcoin.conf atomically
+// Write out umbrel-litecoin.conf atomically
 async function writeUmbrelConf(settings: SettingsSchema): Promise<void> {
 	const lines = generateConfLines(settings)
 
 	// Ensure a POSIX‐style trailing newline
 	const payload = lines.join('\n') + '\n'
 
-	await writeWithBackup(UMBREL_BITCOIN_CONF, payload)
+	await writeWithBackup(UMBREL_LITECOIN_CONF, payload)
 }
 
 async function ensureIncludeLine() {
-	await fse.ensureFile(BITCOIN_CONF)
+	await fse.ensureFile(LITECOIN_CONF)
 
-	let contents = await fse.readFile(BITCOIN_CONF, 'utf8').catch(() => '')
+	let contents = await fse.readFile(LITECOIN_CONF, 'utf8').catch(() => '')
 
 	// return early if the banner is already present
-	if (!contents.startsWith(BITCOIN_CONF_BANNER)) {
-		contents = `${BITCOIN_CONF_BANNER}\n${contents}`
+	if (!contents.startsWith(LITECOIN_CONF_BANNER)) {
+		contents = `${LITECOIN_CONF_BANNER}\n${contents}`
 	}
 
 	// Ensure only one include line
@@ -332,7 +332,7 @@ async function ensureIncludeLine() {
 	contents = contents
 		.split(`\n`)
 		.filter((line) => {
-			if (line === BITCOIN_CONF_INCLUDE_LINE) {
+			if (line === LITECOIN_CONF_INCLUDE_LINE) {
 				if (seenInclude) return false
 				seenInclude = true
 			}
@@ -340,14 +340,14 @@ async function ensureIncludeLine() {
 		})
 		.join('\n')
 
-	await writeWithBackup(BITCOIN_CONF, contents)
+	await writeWithBackup(LITECOIN_CONF, contents)
 }
 
-// Called at server startup (before launching bitcoind):
+// Called at server startup (before launching litecoind):
 export async function ensureConfig(): Promise<SettingsSchema> {
-	await fse.ensureDir(BITCOIN_DIR)
+	await fse.ensureDir(LITECOIN_DIR)
 
-	// Migrate legacy app's bitcoin-config.json to this app's settings.json if it exists
+	// Migrate legacy app's litecoin-config.json to this app's settings.json if it exists
 	await migrateLegacyConfig()
 
 	// Write out settings.json
@@ -355,7 +355,7 @@ export async function ensureConfig(): Promise<SettingsSchema> {
 	const contents = JSON.stringify(settings, null, 2) + '\n'
 	await writeWithBackup(SETTINGS_JSON, contents)
 
-	// Write umbrel-bitcoin.conf + ensure include line in bitcoin.conf
+	// Write umbrel-litecoin.conf + ensure include line in litecoin.conf
 	await writeUmbrelConf(settings)
 	await ensureIncludeLine()
 
@@ -370,7 +370,7 @@ export async function getSettings(): Promise<SettingsSchema> {
 	return cachedSettings
 }
 
-// Update settings.json, umbrel-bitcoin.conf + bitcoin.conf, and restarts bitcoind
+// Update settings.json, umbrel-litecoin.conf + litecoin.conf, and restarts litecoind
 export async function updateSettings(patch: Partial<SettingsSchema>): Promise<SettingsSchema> {
 	const current = await getSettings()
 
@@ -394,13 +394,13 @@ export async function updateSettings(patch: Partial<SettingsSchema>): Promise<Se
 	const jsonPayload = JSON.stringify(merged, null, 2) + '\n'
 	await writeWithBackup(SETTINGS_JSON, jsonPayload)
 
-	// Write and save the new umbrel-bitcoin.conf, derived from the new settings.json
+	// Write and save the new umbrel-litecoin.conf, derived from the new settings.json
 	await writeUmbrelConf(merged)
 
-	// Ensure bitcoin.conf has "includeconf=umbrel-bitcoin.conf"
+	// Ensure litecoin.conf has "includeconf=umbrel-litecoin.conf"
 	await ensureIncludeLine()
 
-	// Restart bitcoind so changes take effect
+	// Restart litecoind so changes take effect
 	await restart()
 
 	// Update in‐memory settings cache if we were successful
@@ -408,9 +408,9 @@ export async function updateSettings(patch: Partial<SettingsSchema>): Promise<Se
 	return merged
 }
 
-// Restore defaults for the settings.json and umbrel-bitcoin.conf files.
-// We do not touch any custom overrides the user has made to the bitcoin.conf file.
-// Note: This preserves the current Bitcoin Core version if the user has pinned one (or falls back to LATEST) - it does NOT force a switch to the latest version.
+// Restore defaults for the settings.json and umbrel-litecoin.conf files.
+// We do not touch any custom overrides the user has made to the litecoin.conf file.
+// Note: This preserves the current Litecoin Core version if the user has pinned one (or falls back to LATEST) - it does NOT force a switch to the latest version.
 export async function restoreDefaults(): Promise<SettingsSchema> {
 	const current = await getSettings().catch(() => undefined)
 	// Preserve the current version choice (or fall back to LATEST) - don't force upgrade to latest
@@ -428,13 +428,13 @@ export async function restoreDefaults(): Promise<SettingsSchema> {
 	const json = JSON.stringify(defaults, null, 2) + '\n'
 	await writeWithBackup(SETTINGS_JSON, json)
 
-	// Write umbrel-bitcoin.conf
+	// Write umbrel-litecoin.conf
 	await writeUmbrelConf(defaults)
 
-	// Ensure bitcoin.conf has "includeconf=umbrel-bitcoin.conf"
+	// Ensure litecoin.conf has "includeconf=umbrel-litecoin.conf"
 	await ensureIncludeLine()
 
-	// Restart bitcoind so changes take effect
+	// Restart litecoind so changes take effect
 	await restart()
 
 	// Update in‐memory settings cache if we were successful
@@ -442,30 +442,30 @@ export async function restoreDefaults(): Promise<SettingsSchema> {
 	return defaults
 }
 
-// Get custom options from bitcoin.conf file
-// Return only the lines after the banner lines that includeconf=umbrel-bitcoin.conf
+// Get custom options from litecoin.conf file
+// Return only the lines after the banner lines that includeconf=umbrel-litecoin.conf
 export async function getCustomOptions(): Promise<string> {
-	await fse.ensureFile(BITCOIN_CONF)
+	await fse.ensureFile(LITECOIN_CONF)
 
-	const full = await fse.readFile(BITCOIN_CONF, 'utf8')
+	const full = await fse.readFile(LITECOIN_CONF, 'utf8')
 
 	// Slice off the banner text
-	let extra = full.startsWith(BITCOIN_CONF_BANNER) ? full.slice(BITCOIN_CONF_BANNER.length) : full
+	let extra = full.startsWith(LITECOIN_CONF_BANNER) ? full.slice(LITECOIN_CONF_BANNER.length) : full
 
 	return extra.replace(/^\n/, '').trimEnd()
 }
 
-// Overwrite bitcoin.conf with our banner + user-supplied lines.
+// Overwrite litecoin.conf with our banner + user-supplied lines.
 // Accepts any text: comments (#), blank lines, section headers, etc.
 export async function updateCustomOptions(rawText: string): Promise<string> {
 	// Normalise line endings and trim trailing whitespace
 	const userLines = rawText.replace(/\r\n/g, '\n').trimEnd()
 
-	const newContents = userLines ? `${BITCOIN_CONF_BANNER}\n${userLines}\n` : `${BITCOIN_CONF_BANNER}\n`
+	const newContents = userLines ? `${LITECOIN_CONF_BANNER}\n${userLines}\n` : `${LITECOIN_CONF_BANNER}\n`
 
-	await writeWithBackup(BITCOIN_CONF, newContents)
+	await writeWithBackup(LITECOIN_CONF, newContents)
 
-	// Restart bitcoind so the new config is applied
+	// Restart litecoind so the new config is applied
 	await restart()
 
 	return userLines

@@ -1,4 +1,4 @@
-import {rpcClient} from '../bitcoind/rpc-client.js'
+import {rpcClient} from '../litecoind/rpc-client.js'
 
 import type {SyncStatus} from '#types'
 

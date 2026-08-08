@@ -10,7 +10,7 @@ export function mbToBytes(mb: number): number {
 	return mb * BYTES_PER_MB
 }
 
-export function satsToBTC(sats: number): number {
+export function satsToLTC(sats: number): number {
 	return sats / 1e8
 }
 

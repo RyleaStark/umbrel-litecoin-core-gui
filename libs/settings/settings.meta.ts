@@ -1,21 +1,21 @@
 // This settings metadata file is used as a single source of truth for deriving the following:
-// - validation schema per Bitcoin Core version (settings.schema.ts)
-// - default settings values per Bitcoin Core version
+// - validation schema per Litecoin Core version (settings.schema.ts)
+// - default settings values per Litecoin Core version
 // - The frontend settings page (React form inputs, descriptions, tool-tips, etc.)
-// To add a new bitcoin.conf option, just add a new block to the `settingsMetadata` object and check that it is being written to the conf file correctly.
+// To add a new litecoin.conf option, just add a new block to the `settingsMetadata` object and check that it is being written to the conf file correctly.
 
-// Available Bitcoin Core versions
+// Available Litecoin Core versions
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_BITCOIN_CORE_VERSIONS = ['v31.0', 'v30.2', 'v30.0', 'v29.2'] as const
+export const AVAILABLE_LITECOIN_CORE_VERSIONS = ['v0.21.5.5', 'v31.0', 'v30.2', 'v30.0', 'v29.2'] as const
 
-// Default Bitcoin Core version used by bitcoind manager (always the newest version in the array)
-export const DEFAULT_BITCOIN_CORE_VERSION = AVAILABLE_BITCOIN_CORE_VERSIONS[0]
-export type BitcoinCoreVersion = (typeof AVAILABLE_BITCOIN_CORE_VERSIONS)[number]
+// Default Litecoin Core version used by litecoind manager (always the newest version in the array)
+export const DEFAULT_LITECOIN_CORE_VERSION = AVAILABLE_LITECOIN_CORE_VERSIONS[0]
+export type LitecoinCoreVersion = (typeof AVAILABLE_LITECOIN_CORE_VERSIONS)[number]
 
 export const LATEST = 'latest' as const
-export const VERSION_CHOICES = [LATEST, ...AVAILABLE_BITCOIN_CORE_VERSIONS] as const
+export const VERSION_CHOICES = [LATEST, 'v0.21.5.5'] as const
 export type SelectedVersion = (typeof VERSION_CHOICES)[number]
 
 // Tabs for organization (used in the UI to group settings)
@@ -24,8 +24,8 @@ export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'version' 
 interface BaseOption {
 	tab: Tab
 	label: string
-	// we may want to make this optional in the future if we create settings that don't have a bitcoin label
-	bitcoinLabel: string
+	// we may want to make this optional in the future if we create settings that don't have a litecoin label
+	litecoinLabel: string
 	description: string
 	subDescription?: string
 }
@@ -80,9 +80,9 @@ type VersionOverrides = Partial<{
 // - removedIn is exclusive (i.e., not available starting with this version)
 // - versionOverrides carries tiny per-version diffs for rule fields only
 export type VersionedOption = Option & {
-	introducedIn?: BitcoinCoreVersion // inclusive
-	removedIn?: BitcoinCoreVersion // exclusive
-	versionOverrides?: Partial<Record<BitcoinCoreVersion, VersionOverrides>>
+	introducedIn?: LitecoinCoreVersion // inclusive
+	removedIn?: LitecoinCoreVersion // exclusive
+	versionOverrides?: Partial<Record<LitecoinCoreVersion, VersionOverrides>>
 }
 
 // NOTE: this is the single source of truth for the settings metadata. Everything is derived from this object (versioned metadata, versioned schema, default values, UI fields, etc).
@@ -93,14 +93,13 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'multi',
 		label: 'Outgoing Peer Connections',
-		bitcoinLabel: 'onlynet',
+		litecoinLabel: 'onlynet',
 		description: 'Select which networks you will use for outgoing peer connections.',
 		options: [
 			{value: 'clearnet', label: 'Clearnet'},
 			{value: 'tor', label: 'Tor'},
-			{value: 'i2p', label: 'I2P'},
 		],
-		default: ['clearnet', 'tor', 'i2p'],
+		default: ['clearnet', 'tor'],
 		requireAtLeastOne: true,
 	},
 
@@ -108,7 +107,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'toggle',
 		label: 'Make All Outgoing Connections to Clearnet Peers Over Tor',
-		bitcoinLabel: 'proxy',
+		litecoinLabel: 'proxy',
 		description:
 			'Connect to peers available on the clearnet via Tor to preserve your anonymity at the cost of slightly less security.',
 		default: false,
@@ -126,11 +125,11 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'multi',
 		label: 'Incoming Peer Connections',
-		bitcoinLabel: 'listen, listenonion, i2pacceptincoming',
+		litecoinLabel: 'listen, listenonion, i2pacceptincoming',
 		// description:
 		// 	'Allow other nodes to connect to your node. If you disable this, your node will only connect to other nodes on the network.',
 		description:
-			'Select which networks you will allow incoming peer connections from. This will broadcast your node to the Bitcoin network to help other nodes access the blockchain. You may need to set up port forwarding on your router to allow incoming connections from clearnet-only peers.',
+			'Select which networks you will allow incoming peer connections from. This will broadcast your node to the Litecoin network to help other nodes access the blockchain. You may need to set up port forwarding on your router to allow incoming connections from clearnet-only peers.',
 		options: [
 			{value: 'clearnet', label: 'Clearnet'},
 			{value: 'tor', label: 'Tor'},
@@ -141,7 +140,7 @@ export const settingsMetadata = {
 		requireAtLeastOne: false,
 	},
 
-	// -natpmp is enabled by default as of Bitcoin Core v30.
+	// -natpmp is enabled by default as of Litecoin Core v30.
 	// This means that nodes with -listen enabled but running behind a firewall, such as a local network router, will be reachable if the firewall/router supports any of the PCP or NAT-PMP protocols (without needing to port forward).
 	// NAT‑PMP uses UDP 5351 to the LAN router; but we run in Docker bridge mode so these packets hit the Docker bridge/NAT gateway, not the router, so no mapping is created from inside the container.
 	// TODO: If umbrelOS adds a way to keep bridge mode but proxy required packets, we can expose this setting (default to `false`) so users with PCP/NAT‑PMP routers can opt in and not have to manually port forward.
@@ -149,12 +148,12 @@ export const settingsMetadata = {
 	// 	tab: 'peers',
 	// 	kind: 'toggle',
 	// 	label: 'Enable NAT-PMP Port Mapping',
-	// 	bitcoinLabel: 'natpmp',
+	// 	litecoinLabel: 'natpmp',
 	// 	description:
 	// 		'Automatically request port forwarding from your router using PCP or NAT-PMP for inbound P2P connections on clearnet. Requires a PCP/NAT-PMP capable router and may not work on all networks. Requires a NAT-PMP capable router and may not work on all networks.',
 	// 	subDescription:
 	// 		'Note: This does not affect Tor or I2P. If disabled, you can still forward ports manually on your router.',
-	// 	// Bitcoin Core default is false
+	// 	// Litecoin Core default is false
 	// 	default: false,
 	// },
 
@@ -162,12 +161,12 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'toggle',
 		label: 'Peer Block Filters',
-		bitcoinLabel: 'peerblockfilters',
+		litecoinLabel: 'peerblockfilters',
 		description:
 			'Share compact block filter data with connected light clients (like wallets) connected to your node, allowing them to get only the transaction information they are interested in from your node without having to download the entire blockchain. Enabling this will automatically enable Block Filter Index below.',
 		subDescription:
 			'⚠ This setting requires Block Filter Index to be enabled (this will be enforced automatically when you save with this setting enabled). If you disable Peer Block Filters, you will need to also manually toggle off Block Filter Index if you want to stop storing block filter data.',
-		// Bitcoind Core's default for this is false
+		// Litecoind Core's default for this is false
 		default: true,
 	},
 
@@ -176,12 +175,12 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'toggle',
 		label: 'Block Filter Index',
-		bitcoinLabel: 'blockfilterindex',
+		litecoinLabel: 'blockfilterindex',
 		description:
 			'Store an index of compact block filters which allows faster wallet re-scanning. In order to serve compact block filters to peers, you must also enable Peer Block Filters above.',
 		subDescription:
 			'⚠ To use Block Filter Index with a pruned node, you must enable it when you start the Prune Old Blocks process under the Optimization category. If your node is already pruned and Block Filter Index is off, enabling it will prevent your node from starting. To fix this while keeping Block Filter Index on, you will need to either reindex your node or turn off Prune Old Blocks.',
-		// Bitcoind Core's default for this is false
+		// Litecoind Core's default for this is false
 		default: true,
 	},
 
@@ -189,7 +188,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'toggle',
 		label: 'Peer Bloom Filters',
-		bitcoinLabel: 'peerbloomfilters',
+		litecoinLabel: 'peerbloomfilters',
 		description:
 			'Enable support for BIP37, a feature used by older light clients (like wallets) to get only the transaction information they are interested in from your node without having to download the entire blockchain.',
 		subDescription:
@@ -201,7 +200,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Peer Ban Time',
-		bitcoinLabel: 'bantime',
+		litecoinLabel: 'bantime',
 		description:
 			"Set the duration (in seconds) that a peer will be banned from connecting to your node if they violate protocol rules or exhibit suspicious behavior. By adjusting bantime, you can maintain your node's security and network integrity, while preventing repeat offenders from causing disruptions. A longer bantime increases the ban period, discouraging misbehavior, while a shorter bantime allows for quicker reconnections but may require more frequent manual monitoring of peer activity.",
 		step: 1,
@@ -213,7 +212,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Max Peer Connections',
-		bitcoinLabel: 'maxconnections',
+		litecoinLabel: 'maxconnections',
 		// TODO: maybe talk about outgoing vs incoming here
 		description:
 			"Set the maximum number of peers your node can connect to simultaneously. By managing this, you can optimize your node's network usage and system resources based on your device's capacity. A higher value enables your node to maintain more connections, potentially improving network stability and data sharing. A lower value conserves system resources and bandwidth, which may be beneficial for devices with limited capabilities.",
@@ -226,7 +225,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Max Receive Buffer',
-		bitcoinLabel: 'maxreceivebuffer',
+		litecoinLabel: 'maxreceivebuffer',
 		description:
 			'Set the maximum amount of memory (in kilobytes) allocated for storing incoming data from other nodes in the network. A larger buffer size allows your node to handle more incoming data simultaneously, while a smaller size reduces memory consumption but may limit the amount of data your node can process at once.',
 		step: 1,
@@ -238,7 +237,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Max Send Buffer',
-		bitcoinLabel: 'maxsendbuffer',
+		litecoinLabel: 'maxsendbuffer',
 		description:
 			'Set the maximum memory (in kilobytes) dedicated to storing outgoing data sent to other nodes in the network. A larger buffer size enables your node to send more data simultaneously, while a smaller size conserves memory but may restrict the volume of data your node can transmit at once.',
 		step: 1,
@@ -246,14 +245,14 @@ export const settingsMetadata = {
 		unit: 'KB',
 	},
 
-	// maxtimeadjustment - no longer in bitcoind -help-debug
-	// https://github.com/bitcoin/bitcoin/pull/28956
+	// maxtimeadjustment - no longer in litecoind -help-debug
+	// https://github.com/litecoin/litecoin/pull/28956
 
 	peertimeout: {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Peer Timeout',
-		bitcoinLabel: 'peertimeout',
+		litecoinLabel: 'peertimeout',
 		description:
 			"Set the maximum time (in seconds) that your node will wait for a response from a connected peer before considering it unresponsive and disconnecting. Adjusting peertimeout helps you maintain stable connections with responsive peers while ensuring your node doesn't waste resources on unresponsive ones. A shorter timeout value allows for quicker disconnection from unresponsive peers, while a longer timeout provides more time for slow-responding peers to maintain a connection.",
 		step: 1,
@@ -266,7 +265,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Connection Timeout',
-		bitcoinLabel: 'timeout',
+		litecoinLabel: 'timeout',
 		description:
 			'Set the maximum time (in seconds) that your node will wait for a response from a newly connecting peer during the initial handshake process before considering it unresponsive and disconnecting. Fine-tuning it helps you ensure your node establishes stable connections with responsive peers while avoiding unresponsive ones. A shorter timeout value leads to faster disconnection from unresponsive peers, while a longer timeout allows more time for slow-responding peers to complete the handshake.',
 		step: 1,
@@ -279,7 +278,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'number',
 		label: 'Max Upload Target',
-		bitcoinLabel: 'maxuploadtarget',
+		litecoinLabel: 'maxuploadtarget',
 		description:
 			"Limit the maximum amount of data (in MB) your node will upload to other peers in the network within a 24-hour period. Setting this to 0 (default) means that there is no limit. By adjusting it, you can optimize your node's bandwidth usage and maintain a balance between sharing data with the network and conserving your internet resources. A higher upload target allows your node to contribute more data to the network, while a lower target helps you save bandwidth for other uses.",
 		subDescription:
@@ -295,11 +294,11 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Cache Size',
-		bitcoinLabel: 'dbcache',
+		litecoinLabel: 'dbcache',
 		description:
-			'Choose the size of the UTXO set to store in RAM. A larger cache can speed up the initial synchronization of your Bitcoin node, but after the initial sync is complete, a larger cache value does not significantly improve performance and may use more RAM than needed.',
+			'Choose the size of the UTXO set to store in RAM. A larger cache can speed up the initial synchronization of your Litecoin node, but after the initial sync is complete, a larger cache value does not significantly improve performance and may use more RAM than needed.',
 		min: 4,
-		// We don't set the max here because bitcoind will just automatically cap at 16_384 without erroring
+		// We don't set the max here because litecoind will just automatically cap at 16_384 without erroring
 		// and this max value has traditionally increased over time with newer releases
 		// max: 16_384,
 		step: 1,
@@ -311,12 +310,12 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Prune Old Blocks',
-		bitcoinLabel: 'prune',
+		litecoinLabel: 'prune',
 		description:
 			'Save storage space by pruning (deleting) old blocks and keeping only a limited copy of the blockchain. It may take some time for your node to become responsive after you turn on pruning.',
 		subDescription:
 			'⚠ txindex is incompatible with a pruned node. It will be automatically disabled when you save with pruning enabled. Note that some connected apps and services may not work with a pruned blockchain. If you turn off pruning after turning it on, you will need to redownload the entire blockchain.',
-		// bitcoind units are MiB, but we use GB here for UX
+		// litecoind units are MiB, but we use GB here for UX
 		// 1 MiB = allow manual pruning via RPC, >=550 MiB =
 		// automatically prune block files to stay under the specified
 		// target size in MiB
@@ -332,11 +331,11 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'toggle',
 		label: 'Enable Transaction Indexing',
-		bitcoinLabel: 'txindex',
+		litecoinLabel: 'txindex',
 		description: 'Enable transaction indexing to speed up transaction lookups.',
 		subDescription:
 			'⚠ Many connected apps and services will not work without txindex enabled, so make sure you understand the implications before disabling it. txindex is automatically disabled when pruning is enabled.',
-		// bitcoin core default is false, but we our default is true
+		// litecoin core default is false, but we our default is true
 		default: true,
 		/** UI hint: disable when prune > 0 */
 		disabledWhen: {prune: (v: unknown) => (v as number) > 0},
@@ -349,7 +348,7 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'toggle',
 		label: 'Relay Transactions Containing Arbitrary Data',
-		bitcoinLabel: 'datacarrier',
+		litecoinLabel: 'datacarrier',
 		description: 'Relay transactions with OP_RETURN outputs.',
 		default: true,
 	},
@@ -358,10 +357,10 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Max Allowed Size of Arbitrary Data in Transactions',
-		bitcoinLabel: 'datacarriersize',
+		litecoinLabel: 'datacarriersize',
 		description: 'Set the maximum size of the data in OP_RETURN outputs (in bytes) that your node will relay.',
 		subDescription: 'Note: datacarrier must be enabled for this setting to take effect.',
-		// Bitcoin Core v30 default changed from 83 to 100_000.
+		// Litecoin Core v30 default changed from 83 to 100_000.
 		// We never overwrite a users saved value, so only fresh installs will get initially set to the new default.
 		default: 100_000,
 		min: 0,
@@ -377,7 +376,7 @@ export const settingsMetadata = {
 		tab: 'peers',
 		kind: 'toggle',
 		label: 'Relay Bare Multisig Transactions',
-		bitcoinLabel: 'permitbaremultisig',
+		litecoinLabel: 'permitbaremultisig',
 		description: 'Relay non-P2SH multisig transactions.',
 		default: true,
 	},
@@ -386,26 +385,26 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Maximum Mempool Size',
-		bitcoinLabel: 'maxmempool',
+		litecoinLabel: 'maxmempool',
 		description:
 			"Set the maximum size that your node will allocate (in RAM) for storing unconfirmed transactions before they are included in a block. By adjusting maxmempool, you can optimize your node's performance and balance memory usage based on your device's capabilities. A larger maxmempool allows your node to store more unconfirmed transactions, providing more accurate statistics on explorer apps like Mempool.",
 		default: 300,
 		unit: 'MB',
 	},
 
-	// Fee policy settings (rates shown as sat/vB; converted to BTC/kvB when writing bitcoin.conf)
+	// Fee policy settings (rates shown as sat/vB; converted to LTC/kvB when writing litecoin.conf)
 	blockmintxfee: {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Minimum Transaction Fee for Block Templates',
-		bitcoinLabel: 'blockmintxfee',
+		litecoinLabel: 'blockmintxfee',
 		description:
 			'Set the lowest fee rate for transactions to be included in block creation. Transactions below this threshold will not be considered when your node is constructing a block template (e.g., used by miners to filter transactions by fee rate).',
-		// Default based on Bitcoin Core v30 help: ~0.001 sat/vB
-		// backported to v29.x so packaged v29.2 has these same defaults (https://github.com/bitcoin/bitcoin/pull/33226)
+		// Default based on Litecoin Core v30 help: ~0.001 sat/vB
+		// backported to v29.x so packaged v29.2 has these same defaults (https://github.com/litecoin/litecoin/pull/33226)
 		default: 0.001,
 		min: 0,
-		// Max derived from Core MoneyRange(MAX_MONEY): 21,000,000 BTC/kvB → 2_100_000_000_000 sat/vB
+		// Max derived from Core MoneyRange(MAX_MONEY): 21,000,000 LTC/kvB → 2_100_000_000_000 sat/vB
 		// Core rejects out-of-range values (errors on startup) and does not clamp.
 		max: 2_100_000_000_000,
 		step: 0.001,
@@ -416,15 +415,15 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Minimum Fee to Relay Transactions',
-		bitcoinLabel: 'minrelaytxfee',
+		litecoinLabel: 'minrelaytxfee',
 		description:
 			'Sets the minimum fee rate your node will accept for relaying, mining, transaction creation, and mempool admission. Transactions below this threshold will be neither relayed nor accepted into your mempool.',
 		subDescription: '⚠ It is recommended to also change incrementalrelayfee when changing this setting.',
-		// Default based on Bitcoin Core v30 help: ~0.1 sat/vB
-		// backported to v29.x so packaged v29.2 has these same defaults (https://github.com/bitcoin/bitcoin/pull/33226)
+		// Default based on Litecoin Core v30 help: ~0.1 sat/vB
+		// backported to v29.x so packaged v29.2 has these same defaults (https://github.com/litecoin/litecoin/pull/33226)
 		default: 0.1,
 		min: 0,
-		// Max derived from Core MoneyRange(MAX_MONEY): 21,000,000 BTC/kvB → 2_100_000_000_000 sat/vB
+		// Max derived from Core MoneyRange(MAX_MONEY): 21,000,000 LTC/kvB → 2_100_000_000_000 sat/vB
 		// Core rejects out-of-range values (errors on startup) and does not clamp.
 		max: 2_100_000_000_000,
 		step: 0.001,
@@ -435,12 +434,12 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Additional Fee for Replacing Transactions',
-		bitcoinLabel: 'incrementalrelayfee',
+		litecoinLabel: 'incrementalrelayfee',
 		description: 'Set the minimum fee rate increase necessary to replace an existing transaction in the mempool.',
 		subDescription: '⚠ It is recommended to also change minrelaytxfee when changing this setting.',
 		default: 0.1,
 		min: 0,
-		// Max derived from Core MoneyRange(MAX_MONEY): 21,000,000 BTC/kvB → 2_100_000_000_000 sat/vB
+		// Max derived from Core MoneyRange(MAX_MONEY): 21,000,000 LTC/kvB → 2_100_000_000_000 sat/vB
 		// Core rejects out-of-range values (errors on startup) and does not clamp.
 		max: 2_100_000_000_000,
 		step: 0.001,
@@ -451,7 +450,7 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Memory Expiration',
-		bitcoinLabel: 'mempoolexpiry',
+		litecoinLabel: 'mempoolexpiry',
 		description:
 			"Set the time threshold (in hours) for unconfirmed transactions to remain in your node's mempool before being removed. By adjusting it, you can manage your node's memory usage and ensure outdated, unconfirmed transactions are discarded. A shorter expiry time helps keep your mempool up-to-date and reduces memory usage, while a longer expiry time allows transactions to remain in the pool for an extended period in case of network congestion or delayed confirmations.",
 		step: 1,
@@ -463,7 +462,7 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'toggle',
 		label: 'Persist Mempool',
-		bitcoinLabel: 'persistmempool',
+		litecoinLabel: 'persistmempool',
 		description:
 			"Saves unconfirmed transactions in your node's mempool when it's shutting down and reloads them upon startup. Enabling this setting helps maintain a consistent mempool and prevents the loss of unconfirmed transactions during a restart. Disabling this setting will clear the mempool upon restart, which may reduce startup time but requires your node to rebuild its mempool from scratch.",
 		default: true,
@@ -473,7 +472,7 @@ export const settingsMetadata = {
 		tab: 'optimization',
 		kind: 'number',
 		label: 'Max Orphan Transactions',
-		bitcoinLabel: 'maxorphantx',
+		litecoinLabel: 'maxorphantx',
 		description:
 			"Set the maximum number of orphan transactions (transactions missing one or more of their inputs) that your node will keep in memory. By fine-tuning it, you can optimize your node's memory usage and manage its performance based on your device's capabilities. A larger limit allows your node to store more orphan transactions, potentially increasing the chances of finding missing inputs. A smaller limit conserves memory but will result in your node evicting some orphan transactions from memory when the limit is reached.",
 		step: 1,
@@ -488,7 +487,7 @@ export const settingsMetadata = {
 		tab: 'rpc-rest',
 		kind: 'toggle',
 		label: 'Public REST API',
-		bitcoinLabel: 'rest',
+		litecoinLabel: 'rest',
 		description:
 			'Enabling the public REST API can help you connect certain wallets and apps to your node. However, because the REST API access is unauthenticated, it can lead to unauthorized access, privacy degradation, and denial-of-service (DoS) attacks.',
 		default: false,
@@ -498,11 +497,11 @@ export const settingsMetadata = {
 		tab: 'rpc-rest',
 		kind: 'number',
 		label: 'RPC Work Queue Size',
-		bitcoinLabel: 'rpcworkqueue',
+		litecoinLabel: 'rpcworkqueue',
 		description:
 			'Set the maximum number of queued Remote Procedure Call (RPC) requests your node can handle (e.g., from connected wallets or other apps), helping you strike a balance between performance and resource usage. Higher values can improve processing speed at the cost of increased system resources.',
 		step: 1,
-		// Bitcoin Core's default is 64, but we use 128
+		// Litecoin Core's default is 64, but we use 128
 		// No min or max in Core, but we should set a min here to avoid the user breaking the UI which relies on RPC calls to show data
 		min: 1,
 		default: 128,
@@ -513,13 +512,13 @@ export const settingsMetadata = {
 		tab: 'rpc-rest',
 		kind: 'toggle',
 		label: 'IPC Mining Interface',
-		bitcoinLabel: 'ipcbind',
+		litecoinLabel: 'ipcbind',
 		description:
-			'Allow apps on your Umbrel to connect to Bitcoin Core over its IPC mining interface. This is required for Stratum V2 apps to request block templates and submit mined blocks from your node.',
+			'Allow apps on your Umbrel to connect to Litecoin Core over its IPC mining interface. This is required for Stratum V2 apps to request block templates and submit mined blocks from your node.',
 		subDescription:
-			'Requires Bitcoin Core v30.2 or newer. This uses Bitcoin Core multiprocess mode and its experimental IPC interface. Leave this disabled unless an app you use requires it.',
+			'Requires Litecoin Core v30.2 or newer. This uses Litecoin Core multiprocess mode and its experimental IPC interface. Leave this disabled unless an app you use requires it.',
 		default: false,
-		// Bitcoin Core v30.0 was removed from the standard upstream download path after the wallet migration bug.
+		// Litecoin Core v30.0 was removed from the standard upstream download path after the wallet migration bug.
 		// We intentionally avoid a special-case rebuild of that withdrawn release, so IPC support starts at v30.2.
 		introducedIn: 'v30.2',
 	},
@@ -529,15 +528,15 @@ export const settingsMetadata = {
 	version: {
 		tab: 'version',
 		kind: 'select',
-		label: 'Bitcoin Core Version',
-		bitcoinLabel: 'version',
+		label: 'Litecoin Core Version',
+		litecoinLabel: 'version',
 		description:
-			'Select whether to always run the latest version of Bitcoin Core available in the Bitcoin Node app, or stay on a specific version until you change it manually. Your Bitcoin Node app will continue to receive updates from the Umbrel App Store even if you decide to stay on a specific version.',
+			'Select whether to always run the latest version of Litecoin Core available in the Litecoin Node app, or stay on a specific version until you change it manually. Your Litecoin Node app will continue to receive updates from the Umbrel App Store even if you decide to stay on a specific version.',
 		subDescription:
 			'⚠ If you choose to stay on a specific version, please make sure your chosen version is up to date with the latest security fixes.',
 		options: [
 			{value: LATEST, label: 'Always use the latest version'},
-			...AVAILABLE_BITCOIN_CORE_VERSIONS.map((version) => ({value: version, label: version})),
+			...AVAILABLE_LITECOIN_CORE_VERSIONS.map((version) => ({value: version, label: version})),
 		],
 		default: LATEST,
 	},
@@ -546,8 +545,8 @@ export const settingsMetadata = {
 	chain: {
 		tab: 'network',
 		kind: 'select',
-		label: 'Bitcoin Network',
-		bitcoinLabel: 'chain',
+		label: 'Litecoin Network',
+		litecoinLabel: 'chain',
 		description:
 			'Choose which blockchain your node will connect to. If you change the chain, you may need to restart any connected apps to ensure they work correctly.',
 		options: [
@@ -561,22 +560,22 @@ export const settingsMetadata = {
 	},
 } satisfies Record<string, VersionedOption>
 
-// Gets the concrete Bitcoin Core version for a given selected version
-export function resolveVersion(desired: SelectedVersion): BitcoinCoreVersion {
+// Gets the concrete Litecoin Core version for a given selected version
+export function resolveVersion(desired: SelectedVersion): LitecoinCoreVersion {
 	// We always resolve 'latest' to the default version
-	return desired === LATEST ? DEFAULT_BITCOIN_CORE_VERSION : desired
+	return desired === LATEST ? DEFAULT_LITECOIN_CORE_VERSION : desired
 }
 
-// Creates the version‑specific metadata for a given Bitcoin Core version:
-export function settingsMetadataForVersion(version: BitcoinCoreVersion) {
+// Creates the version‑specific metadata for a given Litecoin Core version:
+export function settingsMetadataForVersion(version: LitecoinCoreVersion) {
 	const metadata: Record<string, Option> = {}
-	const versionIdx = AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(version)
+	const versionIdx = AVAILABLE_LITECOIN_CORE_VERSIONS.indexOf(version)
 
 	// Loop through each settingsMetadata entry and build the versioned metadata
 	for (const [key, value] of Object.entries(settingsMetadata) as Array<[string, VersionedOption]>) {
-		// Skip the setting entirely if it is not in the specified Bitcoin Core version
-		if (value.introducedIn && versionIdx > AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(value.introducedIn)) continue
-		if (value.removedIn && versionIdx <= AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(value.removedIn)) continue
+		// Skip the setting entirely if it is not in the specified Litecoin Core version
+		if (value.introducedIn && versionIdx > AVAILABLE_LITECOIN_CORE_VERSIONS.indexOf(value.introducedIn)) continue
+		if (value.removedIn && versionIdx <= AVAILABLE_LITECOIN_CORE_VERSIONS.indexOf(value.removedIn)) continue
 
 		// Merge the versioned metadata with the version overrides
 		const merged = {
@@ -595,8 +594,8 @@ export function settingsMetadataForVersion(version: BitcoinCoreVersion) {
 	return metadata
 }
 
-// Compute default form values for a given Bitcoin Core version.
-export function DefaultValuesForVersion(version: BitcoinCoreVersion) {
+// Compute default form values for a given Litecoin Core version.
+export function DefaultValuesForVersion(version: LitecoinCoreVersion) {
 	const metadata = settingsMetadataForVersion(version)
 	const defaults = {} as Record<string, unknown>
 	for (const key in metadata) defaults[key] = (metadata as Record<string, {default: unknown}>)[key].default

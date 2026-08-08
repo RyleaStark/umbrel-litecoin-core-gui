@@ -4,7 +4,7 @@ import {api} from '@/lib/api'
 
 type CustomConfigResponse = {lines: string}
 
-// Returns `{ lines }` where `lines` is the text after the banner in bitcoin.conf.
+// Returns `{ lines }` where `lines` is the text after the banner in litecoin.conf.
 export function useCustomConfig() {
 	return useQuery({
 		queryKey: ['config', 'custom-options'],
@@ -25,10 +25,10 @@ export function useSaveCustomConfig() {
 			qc.invalidateQueries({queryKey: ['config', 'custom-options']})
 
 			// clear crash UI
-			qc.setQueryData(['bitcoind', 'exit'], null)
+			qc.setQueryData(['litecoind', 'exit'], null)
 
-			// clear bitcoin crash toast if it is still showing
-			toast.dismiss('bitcoind-exit')
+			// clear litecoin crash toast if it is still showing
+			toast.dismiss('litecoind-exit')
 
 			// Purge and kickoff background refetches for rpc data
 			qc.removeQueries({queryKey: ['rpc']})

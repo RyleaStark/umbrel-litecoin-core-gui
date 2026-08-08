@@ -51,7 +51,7 @@ export default function GlobeInfo() {
 						<Line
 							icon={<UserDotIcon className='w-5 h-5 text-white' />}
 							title='Your node'
-							description='The white dot is your Bitcoin node'
+							description='The white dot is your Litecoin node'
 						/>
 						<Line
 							icon={<PeerDotIcon className='w-5 h-5 text-white' />}

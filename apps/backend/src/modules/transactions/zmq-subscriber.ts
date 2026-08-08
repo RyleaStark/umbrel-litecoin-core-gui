@@ -1,4 +1,4 @@
-// Bitcoin Core's ZMQ `pubhashtx` transaction notifier is NOT SILENT during IBD and initial Bitcoin Core startup (unlike `pubhashblock`)
+// Litecoin Core's ZMQ `pubhashtx` transaction notifier is NOT SILENT during IBD and initial Litecoin Core startup (unlike `pubhashblock`)
 // We wait until the node is fully synced (IBD complete AND blocks === headers) and the mempool
 // is loaded before subscribing to `pubhashtx`, or else we would receive a flood of tx
 // notifications during startup, IBD, and catch-up.
@@ -18,8 +18,8 @@
 import {EventEmitter} from 'node:events'
 import zmq from 'zeromq'
 
-import {rpcClient} from '../bitcoind/rpc-client.js'
-import {bitcoind} from '../bitcoind/bitcoind.js'
+import {rpcClient} from '../litecoind/rpc-client.js'
+import {litecoind} from '../litecoind/litecoind.js'
 
 async function waitSynced(pollMs = 5_000): Promise<void> {
 	// Wait until IBD is complete AND blocks have caught up to headers.
@@ -33,21 +33,21 @@ async function waitSynced(pollMs = 5_000): Promise<void> {
 			}>('getblockchaininfo')
 			if (!initialblockdownload && blocks === headers) return
 		} catch {
-			// rpc not ready yet or bitcoind is down
+			// rpc not ready yet or litecoind is down
 		}
 		await new Promise((r) => setTimeout(r, pollMs))
 	}
 }
 
 async function waitMempoolLoaded(pollMs = 2_000): Promise<void> {
-	// Our server doesn't wait for bitcoind to be up and the RPC port to be ready, so we
+	// Our server doesn't wait for litecoind to be up and the RPC port to be ready, so we
 	// swallow any errors until the RPC port is ready
 	for (;;) {
 		try {
 			const {loaded} = await rpcClient.command<{loaded: boolean}>('getmempoolinfo')
 			if (loaded) return
 		} catch {
-			// rpc not ready yet or bitcoind is down
+			// rpc not ready yet or litecoind is down
 		}
 		await new Promise((r) => setTimeout(r, pollMs))
 	}
@@ -66,7 +66,7 @@ async function startTransactionSubscriber(): Promise<void> {
 	const gen = ++generation
 
 	// We only subscribe to `pubhashtx` after the node is fully synced and the mempool is loaded.
-	// If bitcoind is synced within a day of the tip, then IBD is false, so we also check
+	// If litecoind is synced within a day of the tip, then IBD is false, so we also check
 	// blocks === headers to avoid the catch-up flood.
 	await waitSynced()
 	if (gen !== generation) return // cancelled by a stop/restart
@@ -96,15 +96,15 @@ function stopTransactionSubscriber() {
 	}
 }
 
-// Listen for bitcoind lifecycle events
-// When bitcoind is restarted via the UI settings page, we need to tear down the existing subscriber and start a new one
+// Listen for litecoind lifecycle events
+// When litecoind is restarted via the UI settings page, we need to tear down the existing subscriber and start a new one
 // with the waitSynced and waitMempoolLoaded logic or else we would receive a flood of tx notifications during startup and all throughout IBD
 // if the user changed from a synced chain (say signet) to an unsynced chain (say mainnet)
-bitcoind.events.on('stop', stopTransactionSubscriber)
-bitcoind.events.on('exit', stopTransactionSubscriber)
+litecoind.events.on('stop', stopTransactionSubscriber)
+litecoind.events.on('exit', stopTransactionSubscriber)
 
-bitcoind.events.on('start', () => {
-	console.log('[tx-subscriber] Bitcoind started, starting transaction subscriber')
+litecoind.events.on('start', () => {
+	console.log('[tx-subscriber] Litecoind started, starting transaction subscriber')
 	startTransactionSubscriber().catch((err) => console.error('ZMQ hashtx subscriber crashed:', err))
 })
 

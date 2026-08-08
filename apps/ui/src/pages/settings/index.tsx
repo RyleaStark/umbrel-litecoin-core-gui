@@ -34,7 +34,7 @@ import Toggle from './Toggle'
 import InputField from './InputField'
 import {SettingsDisabledContext, useInputsDisabled} from './SettingsDisabledContext'
 import DangerZoneAlert from './DangerZoneAlert'
-import BitcoindErrorLog from './BitcoindErrorLog'
+import LitecoindErrorLog from './LitecoindErrorLog'
 import CustomConfigEditor from './CustomConfigEditor'
 import SaveSettingsDialog from './SaveSettingsDialog'
 
@@ -50,7 +50,7 @@ import {
 } from '#settings'
 
 import {useSettings, useUpdateSettings, useRestoreDefaults} from '@/hooks/useSettings'
-import {useBitcoindExitInfo} from '@/hooks/useBitcoindExitInfo'
+import {useLitecoindExitInfo} from '@/hooks/useLitecoindExitInfo'
 import IncompatibleSettingsAlert from './IncompatibleSettingsAlert.js'
 
 type SettingName = string
@@ -97,8 +97,8 @@ function SettingsTabTrigger({
 	control: any
 	names: string[]
 }) {
-	// Bitcoind exit info for the Advanced tab
-	const {data: exitInfo} = useBitcoindExitInfo()
+	// Litecoind exit info for the Advanced tab
+	const {data: exitInfo} = useLitecoindExitInfo()
 	const hasCrash = exitInfo != null
 	// RHF/Zod validation errors for just the fields in this tab.
 	const {errors} = useFormState({control, name: names})
@@ -180,7 +180,7 @@ function FieldRenderer({
 						<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 
 						<div className='flex flex-wrap gap-1 my-1'>
-							{option.bitcoinLabel.split(',').map((label, index) => (
+							{option.litecoinLabel.split(',').map((label, index) => (
 								<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 									{label.trim()}
 								</span>
@@ -190,7 +190,7 @@ function FieldRenderer({
 					{/* TODO: make responsive */}
 					<InputField
 						className='w-32'
-						id={option.bitcoinLabel}
+						id={option.litecoinLabel}
 						type='number'
 						step={option.step ?? 1}
 						min={option.min as number | undefined}
@@ -227,7 +227,7 @@ function FieldRenderer({
 							<div>
 								<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 								<div className='flex flex-wrap gap-1 my-1'>
-									{option.bitcoinLabel.split(',').map((label, index) => (
+									{option.litecoinLabel.split(',').map((label, index) => (
 										<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 											{label.trim()}
 										</span>
@@ -287,7 +287,7 @@ function FieldRenderer({
 								<div>
 									<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 									<div className='flex flex-wrap gap-1 my-1'>
-										{option.bitcoinLabel.split(',').map((label, index) => (
+										{option.litecoinLabel.split(',').map((label, index) => (
 											<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 												{label.trim()}
 											</span>
@@ -342,7 +342,7 @@ function FieldRenderer({
 								)}
 								<label className='text-[14px] font-[400] text-white'>{option.label}</label>
 								<div className='flex flex-wrap gap-1 my-1'>
-									{option.bitcoinLabel.split(',').map((label, index) => (
+									{option.litecoinLabel.split(',').map((label, index) => (
 										<span key={index} className='text-[12px] font-[400] text-white/50 bg-[#2C2C2C] px-1 rounded-sm'>
 											{label.trim()}
 										</span>
@@ -444,7 +444,7 @@ export default function SettingsCard() {
 	// 3) Materialize version-aware metadata used to render the fields and constraints
 	const settingsMetadata = useMemo(() => settingsMetadataForVersion(targetVersion), [targetVersion])
 
-	// Clear search if navigated here with clearSearch parameter (e.g., from "View logs" button in bitcoind crash toast)
+	// Clear search if navigated here with clearSearch parameter (e.g., from "View logs" button in litecoind crash toast)
 	useEffect(() => {
 		if (searchParams.get('clearSearch') === 'true') {
 			setQuery('')
@@ -461,14 +461,14 @@ export default function SettingsCard() {
 	const isInputsDisabled = isLoading || isSubmitting
 
 	// These toast refs are used to clear / update the toast later without causing re-renders
-	// This is so we can show a loading toast if restarting bitcoind is taking longer than X seconds, and then update it to a success or error toast without re-rendering
+	// This is so we can show a loading toast if restarting litecoind is taking longer than X seconds, and then update it to a success or error toast without re-rendering
 	const updateToastId = useRef<string | number | null>(null)
 	const updateTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
 	const onUpdateSettings = (data: SettingsSchema) => {
 		// If the mutation takes longer than 1 second, we show a loading toast
 		updateTimer.current = setTimeout(() => {
-			updateToastId.current = toast.loading('Hang tight, Bitcoin Core is restarting...', {duration: Infinity})
+			updateToastId.current = toast.loading('Hang tight, Litecoin Core is restarting...', {duration: Infinity})
 		}, 1000)
 
 		updateSettings.mutate(data, {
@@ -505,7 +505,7 @@ export default function SettingsCard() {
 	const onRestoreDefaults = () => {
 		// If the mutation takes longer than 1 second, we show a loading toast
 		restoreTimer.current = setTimeout(() => {
-			restoreToastId.current = toast.loading('Hang tight, Bitcoin Core is restarting...', {duration: Infinity})
+			restoreToastId.current = toast.loading('Hang tight, Litecoin Core is restarting...', {duration: Infinity})
 		}, 1000)
 
 		restoreDefaults.mutate(undefined, {
@@ -547,10 +547,10 @@ export default function SettingsCard() {
 		if (!search) return []
 		const m = settingsMetadata as Record<string, Option>
 		return (Object.keys(m) as string[]).filter((name) => {
-			// search by label or bitcoinLabel
+			// search by label or litecoinLabel
 			// TODO: consider adding description as well
-			const {label, bitcoinLabel} = m[name]
-			return label.toLowerCase().includes(search) || bitcoinLabel.toLowerCase().includes(search)
+			const {label, litecoinLabel} = m[name]
+			return label.toLowerCase().includes(search) || litecoinLabel.toLowerCase().includes(search)
 		})
 	}, [search, settingsMetadata])
 
@@ -562,7 +562,7 @@ export default function SettingsCard() {
 		{value: 'optimization', label: 'Optimization'},
 		{value: 'rpc-rest', label: 'Interfaces'},
 		{value: 'network', label: 'Network Selection'},
-		{value: 'version', label: 'Bitcoin Core Version'},
+		{value: 'version', label: 'Litecoin Core Version'},
 		{value: 'advanced', label: 'Advanced'},
 	] as const
 
@@ -680,7 +680,7 @@ export default function SettingsCard() {
 															{/* TODO: the error log feels a bit clunky being under "Advanced". */}
 															<DangerZoneAlert />
 															<CustomConfigEditor />
-															<BitcoindErrorLog settingsViewportRef={settingsViewportRef} />
+															<LitecoindErrorLog settingsViewportRef={settingsViewportRef} />
 														</>
 													)}
 
@@ -723,8 +723,8 @@ export default function SettingsCard() {
 													return (
 														<div className='bg-orange-500/10 border border-orange-500/20 rounded-md p-3'>
 															<p className='text-orange-200 text-xs'>
-																You have manually chosen to stay on Bitcoin Core Version {currentVersion}. Restoring
-																defaults will use the default settings for Bitcoin Core {currentVersion}, not the latest
+																You have manually chosen to stay on Litecoin Core Version {currentVersion}. Restoring
+																defaults will use the default settings for Litecoin Core {currentVersion}, not the latest
 																version.
 															</p>
 														</div>

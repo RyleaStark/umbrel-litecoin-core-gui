@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="https://apps.umbrel.com/app/bitcoin">
+  <a href="https://apps.umbrel.com/app/litecoin">
     <img src="https://github.com/user-attachments/assets/b9ff1e96-f899-41e3-8295-3247b88f6f79" alt="Logo">
   </a>
-  <h1 align="center">Bitcoin Node</h1>
+  <h1 align="center">Litecoin Node</h1>
   <p align="center">
-    Run a Bitcoin node on your umbrelOS personal server. An official app by Umbrel. Powered by Bitcoin Core.
+    Run a Litecoin node on your umbrelOS personal server. An official app by Umbrel. Powered by Litecoin Core.
     <br />
     <a href="https://umbrel.com"><strong>umbrel.com »</strong></a>
     <br />
@@ -26,10 +26,10 @@
 
 ## Getting started
 
-This app can be installed in one click from the [Umbrel App Store](https://apps.umbrel.com/app/bitcoin).
+This app can be installed in one click from the [Umbrel App Store](https://apps.umbrel.com/app/litecoin).
 
 ---
 
-[![License](https://img.shields.io/github/license/getumbrel/umbrel-bitcoin?color=%235351FB)](https://github.com/getumbrel/umbrel-bitcoin/blob/master/LICENSE.md)
+[![License](https://img.shields.io/github/license/getumbrel/umbrel-litecoin?color=%235351FB)](https://github.com/getumbrel/umbrel-litecoin/blob/master/LICENSE.md)
 
 [umbrel.com](https://umbrel.com)

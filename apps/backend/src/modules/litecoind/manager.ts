@@ -5,18 +5,18 @@ import readline from 'node:readline'
 import fse from 'fs-extra'
 
 import type {ExitInfo} from '#types'
-import {AVAILABLE_BITCOIN_CORE_VERSIONS, DEFAULT_BITCOIN_CORE_VERSION} from '#settings'
+import {AVAILABLE_LITECOIN_CORE_VERSIONS, DEFAULT_LITECOIN_CORE_VERSION} from '#settings'
 
 import {
-	BITCOIN_BIN,
-	BITCOIND_BIN,
-	BITCOIN_DIR,
+	LITECOIN_BIN,
+	LITECOIND_BIN,
+	LITECOIN_DIR,
 	SETTINGS_JSON,
-	BITCOIN_CORE_VERSIONS_DIR,
-	BITCOIN_CORE_CURRENT_SYMLINK,
+	LITECOIN_CORE_VERSIONS_DIR,
+	LITECOIN_CORE_CURRENT_SYMLINK,
 } from '../../lib/paths.js'
 
-const IPC_MIN_BITCOIN_CORE_VERSION = 'v30.2' satisfies (typeof AVAILABLE_BITCOIN_CORE_VERSIONS)[number]
+const IPC_MIN_LITECOIN_CORE_VERSION = 'v30.2' satisfies (typeof AVAILABLE_LITECOIN_CORE_VERSIONS)[number]
 
 // Version helpers
 // TODO: determine whether these would be better as async/await (and therefor entire start() as well)
@@ -25,10 +25,10 @@ function getVersionFromSettings(): string {
 		const json = fse.readJsonSync(SETTINGS_JSON)
 		if (typeof json.version === 'string' && json.version.length) {
 			// If the version is 'latest', use the default version which is the latest available version we've packaged
-			return json.version === 'latest' ? DEFAULT_BITCOIN_CORE_VERSION : json.version
+			return json.version === 'latest' ? DEFAULT_LITECOIN_CORE_VERSION : json.version
 		}
 	} catch {}
-	return DEFAULT_BITCOIN_CORE_VERSION
+	return DEFAULT_LITECOIN_CORE_VERSION
 }
 
 function getIpcFromSettings(): boolean {
@@ -40,11 +40,11 @@ function getIpcFromSettings(): boolean {
 }
 
 function supportsIpc(version: string): boolean {
-	const versionIdx = AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(
-		version as (typeof AVAILABLE_BITCOIN_CORE_VERSIONS)[number],
+	const versionIdx = AVAILABLE_LITECOIN_CORE_VERSIONS.indexOf(
+		version as (typeof AVAILABLE_LITECOIN_CORE_VERSIONS)[number],
 	)
-	const minVersionIdx = AVAILABLE_BITCOIN_CORE_VERSIONS.indexOf(IPC_MIN_BITCOIN_CORE_VERSION)
-	// AVAILABLE_BITCOIN_CORE_VERSIONS is newest -> oldest, so lower indexes are newer versions.
+	const minVersionIdx = AVAILABLE_LITECOIN_CORE_VERSIONS.indexOf(IPC_MIN_LITECOIN_CORE_VERSION)
+	// AVAILABLE_LITECOIN_CORE_VERSIONS is newest -> oldest, so lower indexes are newer versions.
 	return versionIdx !== -1 && minVersionIdx !== -1 && versionIdx <= minVersionIdx
 }
 
@@ -58,23 +58,23 @@ function executableExists(path: string): boolean {
 }
 
 function isVersionInstalled(version: string, ipcEnabled: boolean): boolean {
-	const versionDir = `${BITCOIN_CORE_VERSIONS_DIR}/${version}`
-	if (!executableExists(`${versionDir}/bitcoind`)) return false
+	const versionDir = `${LITECOIN_CORE_VERSIONS_DIR}/${version}`
+	if (!executableExists(`${versionDir}/litecoind`)) return false
 	if (!ipcEnabled) return true
 
-	return executableExists(`${versionDir}/bitcoin`) && executableExists(`${versionDir}/bitcoin-node`)
+	return executableExists(`${versionDir}/litecoin`) && executableExists(`${versionDir}/litecoin-node`)
 }
 
 // Stream helper that turns the chunked `Readable` into complete, trimmed lines
 // and passes each non-empty line to a callback.
 function onLine(src: Readable, callback: (line: string) => void) {
 	// Prevent an unhandled error from the raw pipe from crashing the process
-	src.on('error', (err) => console.error('[bitcoind-manager] stream error:', err))
+	src.on('error', (err) => console.error('[litecoind-manager] stream error:', err))
 
 	const rl = readline.createInterface({input: src})
 
 	// Prevent an unhandled error from the readline from crashing the process
-	rl.on('error', (err) => console.error('[bitcoind-manager] readline error:', err))
+	rl.on('error', (err) => console.error('[litecoind-manager] readline error:', err))
 
 	rl.on('line', (raw) => {
 		// In event-callback land now; any throw would bubble up uncaught and kill the process
@@ -82,19 +82,19 @@ function onLine(src: Readable, callback: (line: string) => void) {
 			const line = raw.trim()
 			if (line) callback(line)
 		} catch (err) {
-			console.error('[bitcoind-manager] onLine callback error:', err)
+			console.error('[litecoind-manager] onLine callback error:', err)
 		}
 	})
 }
 
-type BitcoindManagerOptions = {
+type LitecoindManagerOptions = {
 	binary?: string
 	multiprocessBinary?: string
 	datadir?: string
 	extraArgs?: string[]
 }
 
-export class BitcoindManager {
+export class LitecoindManager {
 	private child: ChildProcessWithoutNullStreams | null = null
 	private readonly bin: string
 	private readonly multiprocessBin: string
@@ -106,7 +106,7 @@ export class BitcoindManager {
 	public exitInfo: ExitInfo | null = null
 
 	// Ring buffer for the last N log lines (stderr+stdout)
-	// We use this to show the last N log lines in the UI when bitcoind crashes
+	// We use this to show the last N log lines in the UI when litecoind crashes
 	private readonly logRing: string[] = []
 	private readonly RING_MAX = 200
 	private recordLine = (line: string) => {
@@ -115,30 +115,30 @@ export class BitcoindManager {
 
 	// Logs out and also saves to ring buffer
 	private handleLine(line: string, isStderr: boolean) {
-		const prefix = '[bitcoind]'
+		const prefix = '[litecoind]'
 		void (isStderr ? console.error(prefix, line) : console.log(prefix, line))
 		this.recordLine(line)
 	}
 
 	// EventEmitter that fires `"exit"` with an `ExitInfo` payload
-	// We use this to notify the UI when bitcoind crashes
+	// We use this to notify the UI when litecoind crashes
 	public readonly events = new EventEmitter()
-	// flag to prevent emitting an exit event if we are purposefully stopping bitcoind (e.g., changing config via the UI)
+	// flag to prevent emitting an exit event if we are purposefully stopping litecoind (e.g., changing config via the UI)
 	private expectingExit = false
 
 	constructor({
-		binary = BITCOIND_BIN,
-		multiprocessBinary = BITCOIN_BIN,
-		datadir = BITCOIN_DIR,
+		binary = LITECOIND_BIN,
+		multiprocessBinary = LITECOIN_BIN,
+		datadir = LITECOIN_DIR,
 		extraArgs = [],
-	}: BitcoindManagerOptions = {}) {
+	}: LitecoindManagerOptions = {}) {
 		this.bin = binary
 		this.multiprocessBin = multiprocessBinary
 		this.datadir = datadir
 
 		// Grab extra flags from env, if present
 		// This allows us to add extra flags in the app store compose file without changing this codebase
-		const envArgs = (process.env['BITCOIND_EXTRA_ARGS'] ?? '')
+		const envArgs = (process.env['LITECOIND_EXTRA_ARGS'] ?? '')
 			.trim()
 			.split(',') // splits on commas to allow spaces in arguments
 			.map((arg) => arg.trim()) // trim whitespace from each argument
@@ -187,7 +187,7 @@ export class BitcoindManager {
 		}
 	}
 
-	// Spawn Bitcoin Core as a child process
+	// Spawn Litecoin Core as a child process
 	// TODO: decide if we want to auto-restart on exit ever
 	start() {
 		// return early if already running
@@ -200,8 +200,8 @@ export class BitcoindManager {
 		if (!isVersionInstalled(version, ipcEnabled)) {
 			// Reflect the desired version in versionInfo so the UI shows intent, not the current symlink
 			this.versionInfo = {...this.versionInfo, version}
-			const requiredBinaries = ipcEnabled ? 'bitcoind, bitcoin, bitcoin-node' : 'bitcoind'
-			const msg = `Bitcoin Core version "${version}" is not installed (missing required executable(s): ${requiredBinaries} in ${BITCOIN_CORE_VERSIONS_DIR}/${version}).`
+			const requiredBinaries = ipcEnabled ? 'litecoind, litecoin, litecoin-node' : 'litecoind'
+			const msg = `Litecoin Core version "${version}" is not installed (missing required executable(s): ${requiredBinaries} in ${LITECOIN_CORE_VERSIONS_DIR}/${version}).`
 			this.lastError = new Error(msg)
 			this.exitInfo = {
 				code: null,
@@ -209,18 +209,18 @@ export class BitcoindManager {
 				logTail: [msg],
 				message: msg,
 			}
-			console.error('[bitcoind-manager]', msg)
+			console.error('[litecoind-manager]', msg)
 			// Notify listeners (UI websocket) immediately so the frontend can show a toast right away
 			this.events.emit('exit', this.exitInfo)
 			return
 		}
 
 		// flip the single pointer used by both daemon and CLI
-		execFileSync('ln', ['-sfn', `${BITCOIN_CORE_VERSIONS_DIR}/${version}`, BITCOIN_CORE_CURRENT_SYMLINK])
+		execFileSync('ln', ['-sfn', `${LITECOIN_CORE_VERSIONS_DIR}/${version}`, LITECOIN_CORE_CURRENT_SYMLINK])
 
 		const command = this.startCommand(ipcEnabled)
 
-		// Refresh binary version info (the PATH now resolves to the target Bitcoin Core binary)
+		// Refresh binary version info (the PATH now resolves to the target Litecoin Core binary)
 		this.versionInfo = this.getBinaryVersionInfo(command.binary)
 
 		// Clear any previous log tail
@@ -233,7 +233,7 @@ export class BitcoindManager {
 		}) as ChildProcessWithoutNullStreams
 
 		this.lastError = null
-		console.log('[bitcoind-manager] spawned PID', this.child.pid, `(${command.mode})`)
+		console.log('[litecoind-manager] spawned PID', this.child.pid, `(${command.mode})`)
 
 		// Emit start event for zmq hashtx subscriber
 		this.events.emit('start')
@@ -243,7 +243,7 @@ export class BitcoindManager {
 		onLine(this.child.stderr, (line) => this.handleLine(line, true))
 
 		this.child.on('exit', (code, sig) => {
-			console.error(`[bitcoind] exited (code=${code}, sig=${sig})`)
+			console.error(`[litecoind] exited (code=${code}, sig=${sig})`)
 
 			// Skip emitting crash info if we expected this exit
 			if (this.expectingExit) return
@@ -252,7 +252,7 @@ export class BitcoindManager {
 				code,
 				sig,
 				logTail: [...this.logRing],
-				message: `Bitcoin Core stopped (code ${code ?? 'null'})`,
+				message: `Litecoin Core stopped (code ${code ?? 'null'})`,
 			}
 
 			this.events.emit('exit', this.exitInfo)
@@ -261,19 +261,19 @@ export class BitcoindManager {
 
 		// handle spawn errors
 		this.child.on('error', (err) => {
-			console.error('[bitcoind-manager] failed to spawn:', err)
+			console.error('[litecoind-manager] failed to spawn:', err)
 			this.lastError = err
 		})
 	}
 
-	// Gracefully stop bitcoind
+	// Gracefully stop litecoind
 	async stop() {
 		if (!this.child) return
 
 		// Emit stop event for zmq hashtx subscriber
 		this.events.emit('stop')
 
-		// we don't want to emit an exit event if we are purposefully stopping bitcoind
+		// we don't want to emit an exit event if we are purposefully stopping litecoind
 		this.expectingExit = true
 		this.child.kill('SIGTERM')
 		await new Promise((res) => this.child?.once('exit', res))
@@ -282,7 +282,7 @@ export class BitcoindManager {
 		this.startedAt = null
 	}
 
-	// Restart bitcoind
+	// Restart litecoind
 	async restart() {
 		await this.stop()
 		this.start()
