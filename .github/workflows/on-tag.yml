@@ -23,4 +23,4 @@ jobs:
           file: apps/backend/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          tags: ghcr.io/ryleastark/umbrel-litecoin-core-gui:${{ github.ref_name }}
