@@ -35,7 +35,7 @@ export default function CustomConfigEditor() {
 					[&::-webkit-scrollbar-thumb]:hover:bg-[hsla(0,0%,100%,0.25)]
 					[&::-webkit-scrollbar-track]:bg-transparent
 					[scrollbar-width:thin] [scrollbar-color:hsla(0,0%,100%,0.15)_transparent]
-					focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-white/30'
+					focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black'
 				placeholder='# Add comments, [sections], or key=value lines here…'
 				value={text}
 				onChange={(e) => setText(e.target.value)}

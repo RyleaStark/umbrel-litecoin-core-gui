@@ -11,7 +11,7 @@ export default {
 			backgroundImage: {
 				'card-gradient': 'linear-gradient(to bottom, hsla(0,0%,6%,1), hsla(0,0%,3%,1))',
 				'text-gradient': 'linear-gradient(to bottom, hsla(0,0%,100%,1), hsla(0,0%,100%,0.64))',
-				'button-gradient': 'linear-gradient(to bottom, hsla(0,0%,11%,1), hsla(0,0%,9%,1))',
+				'button-gradient': 'linear-gradient(to bottom, #345D9D, #244A78)',
 				'dock-gradient': 'linear-gradient(to bottom, hsla(0,0%,10%,1), hsla(0,0%,5%,1))',
 			},
 		},

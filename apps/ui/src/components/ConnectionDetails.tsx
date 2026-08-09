@@ -75,19 +75,19 @@ export default function ConnectionDetails() {
 						<TabsList className='relative flex bg-transparent rounded-none h-auto p-0 gap-1 z-10 w-max'>
 							<TabsTrigger
 								value='electrum'
-								className='relative text-[12px] bg-transparent border-none data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-white/60 focus-visible:outline-none focus:outline-none focus:ring-0 rounded-none hover:text-white/80 transition-none pb-3 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1.5px] after:bg-transparent data-[state=active]:after:bg-white'
+								className='relative text-[12px] bg-transparent border-none data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-white/60 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm hover:text-white/80 transition-none pb-3 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1.5px] after:bg-transparent data-[state=active]:after:bg-[#5E8FD3]'
 							>
 								Electrum
 							</TabsTrigger>
 							<TabsTrigger
 								value='rpc'
-								className='relative text-[12px] bg-transparent border-none data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-white/60 focus-visible:outline-none focus:outline-none focus:ring-0 rounded-none hover:text-white/80 transition-none pb-3 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1.5px] after:bg-transparent data-[state=active]:after:bg-white'
+								className='relative text-[12px] bg-transparent border-none data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-white/60 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm hover:text-white/80 transition-none pb-3 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1.5px] after:bg-transparent data-[state=active]:after:bg-[#5E8FD3]'
 							>
 								RPC Details
 							</TabsTrigger>
 							<TabsTrigger
 								value='p2p'
-								className='relative text-[12px] bg-transparent border-none data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-white/60 focus-visible:outline-none focus:outline-none focus:ring-0 rounded-none hover:text-white/80 transition-none pb-3 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1.5px] after:bg-transparent data-[state=active]:after:bg-white'
+								className='relative text-[12px] bg-transparent border-none data-[state=active]:text-white data-[state=active]:bg-transparent data-[state=inactive]:text-white/60 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:ring-offset-2 focus-visible:ring-offset-black rounded-sm hover:text-white/80 transition-none pb-3 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[1.5px] after:bg-transparent data-[state=active]:after:bg-[#5E8FD3]'
 							>
 								P2P Details
 							</TabsTrigger>
@@ -291,7 +291,7 @@ function ConnectionTypeAndQrCard({
 						{net === 'local' && (
 							<motion.span
 								layoutId='connection-pill'
-								className='absolute inset-0 -z-10 rounded-sm bg-[#252525]'
+								className='absolute inset-0 -z-10 rounded-sm border border-[#5E8FD3]/50 bg-[#244A78]'
 								transition={{type: 'tween', ease: 'easeInOut', duration: 0.2}}
 							>
 								<GradientBorderFromTop />
@@ -307,7 +307,7 @@ function ConnectionTypeAndQrCard({
 						{net === 'tor' && (
 							<motion.span
 								layoutId='connection-pill'
-								className='absolute inset-0 -z-10 rounded-sm bg-[#252525]'
+								className='absolute inset-0 -z-10 rounded-sm border border-[#5E8FD3]/50 bg-[#244A78]'
 								transition={{type: 'tween', ease: 'easeInOut', duration: 0.2}}
 							>
 								<GradientBorderFromTop />
