@@ -96,20 +96,20 @@ const goldenGradientMaterial = new THREE.ShaderMaterial({
 			float steps = 4.0; // Number of color bands
 			gradient = floor(gradient * steps) / steps + (1.0 / (steps * 2.0));
 			
-			// Non-hover gradient colors
-			vec3 darkRed = vec3(0.180, 0.027, 0.004); // #2E0701
-			vec3 brightOrange = vec3(0.745, 0.212, 0.0); // #BE3600
-			vec3 goldenYellow = vec3(0.933, 0.690, 0.027); // #EEB007
+			// Non-hover Litecoin gradient colors
+			vec3 deepNavy = vec3(0.035, 0.094, 0.180); // #09182E
+			vec3 litecoinBlue = vec3(0.204, 0.365, 0.616); // #345D9D
+			vec3 coolSilver = vec3(0.788, 0.827, 0.875); // #C9D3DF
 			
 			// Hover gradient colors
-			vec3 darkOrange = vec3(0.784, 0.357, 0.114); // #C85B1D
-			vec3 brightYellow = vec3(0.992, 0.820, 0.0); // #FDD100
-			vec3 paleYellow = vec3(1.0, 0.984, 0.769); // #FFFBC4
+			vec3 midBlue = vec3(0.310, 0.498, 0.769); // #4F7FC4
+			vec3 brightBlue = vec3(0.427, 0.624, 0.863); // #6D9FDC
+			vec3 paleSilver = vec3(0.871, 0.906, 0.949); // #DEE7F2
 			
 			// Mix colors based on hover state
-			vec3 color1 = mix(darkRed, darkOrange, gradientInvert);
-			vec3 color2 = mix(brightOrange, brightYellow, gradientInvert);
-			vec3 color3 = mix(goldenYellow, paleYellow, gradientInvert);
+			vec3 color1 = mix(deepNavy, midBlue, gradientInvert);
+			vec3 color2 = mix(litecoinBlue, brightBlue, gradientInvert);
+			vec3 color3 = mix(coolSilver, paleSilver, gradientInvert);
 			
 			// Band thresholds
 			// Non-hover: 60% dark, 30% bright, 10% golden

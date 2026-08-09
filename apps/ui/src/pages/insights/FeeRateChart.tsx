@@ -12,7 +12,7 @@ import {useSyncStatus} from '@/hooks/useSyncStatus'
 import {syncStage} from '@/lib/sync-progress'
 
 const SERIES = {
-	p50: {label: '50th-percentile', color: 'hsl(29 100% 51%)'},
+	p50: {label: '50th-percentile', color: 'hsl(216 55% 55%)'},
 } as const
 
 export default function FeeRateChart() {
@@ -51,14 +51,14 @@ export default function FeeRateChart() {
 					<defs>
 						{/* Gradient under the curve */}
 						<linearGradient id={fillId} x1='0' y1='0' x2='0' y2='1'>
-							<stop offset='0%' stopColor='hsla(29,100%,51%,0.30)' />
-							<stop offset='100%' stopColor='hsla(29,100%,51%,0.02)' />
+							<stop offset='0%' stopColor='hsla(216,55%,55%,0.30)' />
+							<stop offset='100%' stopColor='hsla(216,55%,55%,0.02)' />
 						</linearGradient>
 
-						{/* Stroke gradient for the line: white at the top of the chart, orange lower down */}
+						{/* Stroke gradient for the line: white at the top of the chart, Litecoin blue lower down */}
 						<linearGradient id={strokeId} gradientUnits='userSpaceOnUse' x1='0' x2='0' y1='100%' y2='0'>
-							<stop offset='0%' stopColor='hsla(29, 100%, 51%, 0.3)' />
-							<stop offset='70%' stopColor='hsla(29, 100%, 51%, 1)' />
+							<stop offset='0%' stopColor='hsla(216, 55%, 55%, 0.3)' />
+							<stop offset='70%' stopColor='hsla(216, 55%, 55%, 1)' />
 							<stop offset='100%' stopColor='hsla(0, 0%, 100%, 1)' />
 						</linearGradient>
 					</defs>
@@ -93,7 +93,7 @@ export default function FeeRateChart() {
 									{/* Fee Rate */}
 									<div className='flex items-center gap-2'>
 										<span className='text-white/60'>Median Fee Rate</span>
-										<span className='ml-auto font-mono tabular-nums text-[#FF7E05]'>{d.p50} sat/vB</span>
+										<span className='ml-auto font-mono tabular-nums text-[#5E8FD3]'>{d.p50} sat/vB</span>
 									</div>
 								</div>
 							)

@@ -32,8 +32,8 @@ const VersionPinningStatus = ({formVersion}: {formVersion: string}) => {
 	}
 
 	return (
-		<span className='bg-orange-500/10 border border-orange-500/20 rounded-md p-3 block'>
-			<span className='text-orange-200 text-xs'>
+		<span className='bg-blue-500/10 border border-blue-500/20 rounded-md p-3 block'>
+			<span className='text-blue-200 text-xs'>
 				You have chosen to stay on Litecoin Core {formVersion} until you manually change it again in Settings. Your
 				Litecoin Node app will continue to receive updates from the Umbrel App Store, but it won't be automatically
 				upgraded to the latest Litecoin Core version available in the Litecoin Node app.

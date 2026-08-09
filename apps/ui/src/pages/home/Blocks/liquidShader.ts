@@ -78,11 +78,11 @@ export const liquidFragmentShader = `
 		float finalShape = shape + tendrils * 0.3;
 		finalShape *= 0.8 + sin(uTime * 3.0 + pattern) * 0.2;
 		
-		vec3 darkRed = vec3(0.180, 0.027, 0.004);
-		vec3 brightOrange = vec3(0.745, 0.212, 0.0);
+		vec3 deepNavy = vec3(0.035, 0.094, 0.180);
+		vec3 litecoinBlue = vec3(0.204, 0.365, 0.616);
 		vec3 greenColor = vec3(0.2, 1.0, 0.3);
 		
-		vec3 validationColor = mix(darkRed, brightOrange, 0.5 + pattern * 0.5);
+		vec3 validationColor = mix(deepNavy, litecoinBlue, 0.5 + pattern * 0.5);
 		vec3 baseColor = mix(validationColor, greenColor, uColorProgress);
 		
 		vec3 color = baseColor * (1.0 + pattern * 0.2);

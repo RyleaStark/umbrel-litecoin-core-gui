@@ -240,7 +240,7 @@ function QR({value}: {value?: string}) {
 					width={200}
 					height={200}
 					level='Q' // Q = 25% error correction
-					fgColor='#9C4C00' // solid orange fill
+					fgColor='#244A78' // deep Litecoin blue fill
 					bgColor='transparent' // transparent background
 					cellClassPrefix='qrPx' // produces .qrPx & .qrPx-filled that we can target with CSS
 					style={{display: 'block', shapeRendering: 'crispEdges'}}
@@ -256,9 +256,9 @@ function QR({value}: {value?: string}) {
 
 			{/* Correct selector: path.qrPx-filled */}
 			<style>{`
-        /* add a lighter-orange outline to each "filled" cell */
+        /* add a lighter blue outline to each "filled" cell */
         .qrPx-filled {
-          stroke: #FF7E05 !important;
+          stroke: #5E8FD3 !important;
           stroke-width: 0.5px !important;
           stroke-linejoin: miter;
           vector-effect: non-scaling-stroke;

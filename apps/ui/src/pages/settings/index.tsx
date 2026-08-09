@@ -721,11 +721,11 @@ export default function SettingsCard() {
 												const currentVersion = form.getValues().version ?? 'latest'
 												if (currentVersion !== 'latest') {
 													return (
-														<div className='bg-orange-500/10 border border-orange-500/20 rounded-md p-3'>
-															<p className='text-orange-200 text-xs'>
+														<div className='bg-blue-500/10 border border-blue-500/20 rounded-md p-3'>
+															<p className='text-blue-200 text-xs'>
 																You have manually chosen to stay on Litecoin Core Version {currentVersion}. Restoring
-																defaults will use the default settings for Litecoin Core {currentVersion}, not the latest
-																version.
+																defaults will use the default settings for Litecoin Core {currentVersion}, not the
+																latest version.
 															</p>
 														</div>
 													)
