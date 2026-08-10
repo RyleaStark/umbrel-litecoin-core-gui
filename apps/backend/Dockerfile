@@ -8,7 +8,7 @@ RUN apt-get update \
  && apt-get install --no-install-recommends --yes ca-certificates curl \
  && rm -rf /var/lib/apt/lists/* \
  && case "$TARGETARCH" in \
-      amd64) archive="litecoin-${LITECOIN_VERSION}-x86_64-linux-gnu.tar.gz"; expected_sha256="3c0f56c2a217a431ef446641669a0b74ce7dbcd9b9ed1a118fc830b8f6779ee83f" ;; \
+      amd64) archive="litecoin-${LITECOIN_VERSION}-x86_64-linux-gnu.tar.gz"; expected_sha256="3c0a217651a431ef446641669a0b74ce7dbcd9b9ed1a118fc830b8f6779ee83f" ;; \
       arm64) archive="litecoin-${LITECOIN_VERSION}-aarch64-linux-gnu.tar.gz"; expected_sha256="81c3ca2a7fcbccaabaf0a0ea2022f1990787f0cc1937aaad4dcc61d2856799a8" ;; \
       *) echo "Unsupported target architecture: $TARGETARCH" >&2; exit 1 ;; \
     esac \
