@@ -25,7 +25,7 @@ function getVersionFromSettings(): string {
 		const json = fse.readJsonSync(SETTINGS_JSON)
 		if (typeof json.version === 'string' && json.version.length) {
 			// If the version is 'latest', use the default version which is the latest available version we've packaged
-			return json.version === 'latest' ? DEFAULT_LITECOIN_CORE_VERSION : json.version
+			return json.version === 'latest' || json.version === 'v0.21.5.5' ? DEFAULT_LITECOIN_CORE_VERSION : json.version
 		}
 	} catch {}
 	return DEFAULT_LITECOIN_CORE_VERSION
