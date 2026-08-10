@@ -1,8 +1,24 @@
 # Self-contained Litecoin Core node manager and web UI.
-# The Litecoin daemon is copied from the official multi-architecture image.
-FROM litecoinproject/litecoin-core:0.21.5.5@sha256:d541077a067257620648371ab88cc1fb7eb3b738ad3fc8981d75008a73df3561 AS litecoind
+# Fetch the official release archives by their independently published SHA-256
+# so the daemon can advance even when the third-party container image lags.
+FROM debian:bookworm-slim AS litecoind
+ARG TARGETARCH
+ARG LITECOIN_VERSION=0.21.5.6
+RUN apt-get update \
+ && apt-get install --no-install-recommends --yes ca-certificates curl \
+ && rm -rf /var/lib/apt/lists/* \
+ && case "$TARGETARCH" in \
+      amd64) archive="litecoin-${LITECOIN_VERSION}-x86_64-linux-gnu.tar.gz"; expected_sha256="3c0a217651a431ef446641669a0b74ce7dbcd9b9ed1a118fc830b8f6779ee83f" ;; \
+      arm64) archive="litecoin-${LITECOIN_VERSION}-aarch64-linux-gnu.tar.gz"; expected_sha256="81c3ca2a7fcbccaabaf0a0ea2022f1990787f0cc1937aaad4dcc61d2856799a8" ;; \
+      *) echo "Unsupported target architecture: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+ && curl --fail --location --retry 3 --output "/tmp/$archive" "https://github.com/litecoin-project/litecoin/releases/download/v${LITECOIN_VERSION}/$archive" \
+ && echo "$expected_sha256  /tmp/$archive" | sha256sum --check --strict \
+ && mkdir -p /opt \
+ && tar --extract --gzip --file "/tmp/$archive" --directory /opt \
+ && rm "/tmp/$archive"
 
-FROM node:20-slim AS deps
+FROM node:24.19.0-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS deps
 WORKDIR /repo
 COPY package*.json ./
 COPY apps/backend/package*.json apps/backend/
@@ -16,21 +32,21 @@ COPY . .
 RUN tsc -b libs/shared-types libs/settings apps/backend \
  && npm run --workspace apps/ui build
 
-FROM node:20-slim AS runtime
+FROM node:24.19.0-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS runtime
 WORKDIR /app
 COPY package*.json ./
 COPY apps/backend/package*.json apps/backend/
-RUN npm ci --omit=dev --install-strategy=hoisted --ignore-scripts
+RUN npm ci --workspace apps/backend --include-workspace-root --omit=dev --omit=optional --install-strategy=hoisted --ignore-scripts
 COPY --from=app-builder /repo/apps/backend/dist ./dist
 COPY --from=app-builder /repo/apps/ui/dist ./dist/public
 COPY --from=app-builder /repo/libs/settings/dist ./libs/settings/dist
 COPY --from=app-builder /repo/libs/shared-types/dist ./libs/shared-types/dist
 
 # Keep the UI's version-manager contract while using the pinned official Litecoin Core binary.
-RUN mkdir -p /opt/litecoind/v0.21.5.5 /data/litecoin /data/app
-COPY --from=litecoind /opt/litecoin-0.21.5.5/bin/litecoind /opt/litecoind/v0.21.5.5/litecoind
-COPY --from=litecoind /opt/litecoin-0.21.5.5/bin/litecoin-cli /opt/litecoind/v0.21.5.5/litecoin-cli
-RUN ln -sfn /opt/litecoind/v0.21.5.5 /opt/litecoind/current \
+RUN mkdir -p /opt/litecoind/v0.21.5.6 /data/litecoin /data/app
+COPY --from=litecoind /opt/litecoin-0.21.5.6/bin/litecoind /opt/litecoind/v0.21.5.6/litecoind
+COPY --from=litecoind /opt/litecoin-0.21.5.6/bin/litecoin-cli /opt/litecoind/v0.21.5.6/litecoin-cli
+RUN ln -sfn /opt/litecoind/v0.21.5.6 /opt/litecoind/current \
  && ln -sfn /opt/litecoind/current/litecoind /usr/local/bin/litecoind \
  && ln -sfn /opt/litecoind/current/litecoin-cli /usr/local/bin/litecoin-cli \
  && ln -sfn /data/litecoin /root/.litecoin \

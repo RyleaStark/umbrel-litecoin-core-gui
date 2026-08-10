@@ -8,15 +8,17 @@
 // IMPORTANT:
 // - Any version added here needs to be added in the Dockerfile
 // - The array of versions must be newest → oldest. We do a simple index comparison to compare versions, so lower index = newer.
-export const AVAILABLE_LITECOIN_CORE_VERSIONS = ['v0.21.5.5', 'v31.0', 'v30.2', 'v30.0', 'v29.2'] as const
+export const AVAILABLE_LITECOIN_CORE_VERSIONS = ['v0.21.5.6', 'v0.21.5.5', 'v31.0', 'v30.2', 'v30.0', 'v29.2'] as const
 
 // Default Litecoin Core version used by litecoind manager (always the newest version in the array)
 export const DEFAULT_LITECOIN_CORE_VERSION = AVAILABLE_LITECOIN_CORE_VERSIONS[0]
 export type LitecoinCoreVersion = (typeof AVAILABLE_LITECOIN_CORE_VERSIONS)[number]
 
 export const LATEST = 'latest' as const
-export const VERSION_CHOICES = [LATEST, 'v0.21.5.5'] as const
-export type SelectedVersion = (typeof VERSION_CHOICES)[number]
+export const VERSION_CHOICES = [LATEST, 'v0.21.5.6'] as const
+// v0.21.5.5 remains accepted only to migrate existing persisted settings to
+// the security release below; it is not selectable or shipped in this image.
+export type SelectedVersion = (typeof VERSION_CHOICES)[number] | 'v0.21.5.5'
 
 // Tabs for organization (used in the UI to group settings)
 export type Tab = 'peers' | 'optimization' | 'rpc-rest' | 'network' | 'version' | 'advanced'
@@ -562,8 +564,9 @@ export const settingsMetadata = {
 
 // Gets the concrete Litecoin Core version for a given selected version
 export function resolveVersion(desired: SelectedVersion): LitecoinCoreVersion {
-	// We always resolve 'latest' to the default version
-	return desired === LATEST ? DEFAULT_LITECOIN_CORE_VERSION : desired
+	// The image contains 0.21.5.6 only. Transparently move persisted 0.21.5.5
+	// pins to the urgent security release rather than leaving the node unable to start.
+	return desired === LATEST || desired === 'v0.21.5.5' ? DEFAULT_LITECOIN_CORE_VERSION : desired
 }
 
 // Creates the version‑specific metadata for a given Litecoin Core version:
